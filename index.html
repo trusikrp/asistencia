@@ -56,6 +56,63 @@ select.inp{cursor:pointer}
 .divider{display:flex;align-items:center;gap:10px;color:var(--t3);font-size:12px;margin:14px 0}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr)}
 .auth-footer{text-align:center;margin-top:12px;font-size:12px;color:var(--t2)}
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Gestor de Asistencia Docente</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px}
+:root{
+  --navy:#17375e;--nav2:#1e4d82;--nav3:#2878c4;--sky:#deedf9;--sky2:#b8d5ef;
+  --ok:#1e7a47;--okb:#e9f7ef;--ok2:#27ae60;
+  --warn:#c67c10;--wb:#fef5e4;
+  --red:#b92d20;--rb:#fdecea;
+  --bg:#f0f4f8;--bg2:#e8eef5;--sfc:#ffffff;--sfc2:#f6f8fa;
+  --tx:#1a2733;--t2:#4a6070;--t3:#8fa5b2;
+  --bdr:#dde5ec;--bdr2:#c0d0da;
+  --r6:6px;--r8:8px;--r10:10px;--r14:14px;--r18:18px;
+  --sh1:0 1px 3px rgba(0,0,0,.08);--sh2:0 2px 8px rgba(0,0,0,.10);--sh3:0 4px 16px rgba(0,0,0,.13);
+  --sw:290px
+}
+body{background:var(--bg);display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%;overflow:hidden}
+#toasts{position:fixed;top:14px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:10px 16px;border-radius:var(--r10);font-size:13px;font-weight:600;color:#fff;min-width:180px;max-width:300px;box-shadow:var(--sh3);pointer-events:all;animation:tIn .22s ease}
+.t-ok{background:#27ae60}.t-err{background:#c0392b}.t-info{background:var(--nav3)}
+@keyframes tIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+/* AUTH */
+.auth-bg{display:flex;align-items:center;justify-content:center;min-height:100dvh;background:linear-gradient(135deg,#0d2444 0%,#1a5276 65%,#2878c4 100%);padding:20px}
+.auth-card{background:#fff;border-radius:var(--r18);padding:30px 26px 26px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.auth-logo{text-align:center;margin-bottom:22px}
+.auth-ico{font-size:48px;line-height:1}
+.auth-title{font-size:21px;font-weight:800;color:var(--navy);margin-top:8px}
+.auth-sub{font-size:12px;color:var(--t2);margin-top:2px}
+.tab-row{display:flex;background:var(--sfc2);border-radius:var(--r10);padding:3px;margin-bottom:20px}
+.tpill{flex:1;border:none;background:transparent;border-radius:var(--r8);padding:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--t2);transition:all .15s;font-family:inherit}
+.tpill.on{background:#fff;color:var(--navy);box-shadow:var(--sh1)}
+label.lbl{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.6px;text-transform:uppercase;display:block;margin-bottom:4px;margin-top:12px}
+.inp{width:100%;border:1.5px solid var(--bdr);border-radius:var(--r8);padding:10px 12px;font-size:14px;color:var(--tx);outline:none;background:#fff;font-family:inherit;transition:border-color .15s;display:block}
+.inp:focus{border-color:var(--nav3);box-shadow:0 0 0 3px rgba(40,120,196,.12)}
+select.inp{cursor:pointer}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:var(--r8);padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+.btn-pri{background:var(--nav2);color:#fff}.btn-pri:hover{background:var(--navy)}
+.btn-pri.full{width:100%;margin-top:14px}
+.btn-sec{background:var(--sky);color:var(--nav2)}.btn-sec:hover{background:var(--sky2)}
+.btn-ok{background:var(--okb);color:var(--ok);border:1px solid #b2ddc4}.btn-ok:hover{background:#d4f0e0}
+.btn-red{background:var(--rb);color:var(--red);border:1px solid #f5c2bc}.btn-red:hover{background:#f9d5d1}
+.btn-ghost{background:var(--sfc2);color:var(--tx);border:1px solid var(--bdr)}.btn-ghost:hover{background:var(--bg2)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:var(--r6)}
+.btn-dis{opacity:.4;cursor:not-allowed;pointer-events:none}
+.lnk{background:none;border:none;color:var(--nav3);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;font-family:inherit}
+.errmsg{background:var(--rb);color:var(--red);border-radius:var(--r8);padding:9px 12px;font-size:13px;margin:8px 0}
+.okmsg{background:var(--okb);color:var(--ok);border-radius:var(--r8);padding:9px 12px;font-size:13px;margin:8px 0}
+.rcode-wrap{background:var(--sky);border:1px solid var(--sky2);border-radius:var(--r10);padding:14px;text-align:center;margin:12px 0}
+.rcode{font-size:26px;font-weight:900;letter-spacing:4px;color:var(--navy);margin:4px 0}
+.divider{display:flex;align-items:center;gap:10px;color:var(--t3);font-size:12px;margin:14px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.auth-footer{text-align:center;margin-top:12px;font-size:12px;color:var(--t2)}
 .pw-wrap{position:relative;display:block}
 .pw-wrap .inp{padding-right:42px}
 .pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--t2);padding:4px;line-height:1;user-select:none}
@@ -425,7 +482,7 @@ function doLogin(uname, pwd) {
   DB.set('sess', u.id);
   return { ok: true, user: u };
 }
-function doRegister(uname, pwd, secQ, secA) {
+function doRegister(uname, pwd, email, secQ, secA) {
   var users = getUsers();
   if (users.find(function(x) { return x.uname.toLowerCase() === uname.toLowerCase(); })) {
     return { ok: false, msg: 'El nombre de usuario ya existe.' };
@@ -433,7 +490,7 @@ function doRegister(uname, pwd, secQ, secA) {
   if (uname.length < 3) return { ok: false, msg: 'El usuario debe tener al menos 3 caracteres.' };
   if (pwd.length < 4) return { ok: false, msg: 'La contraseña debe tener al menos 4 caracteres.' };
   var code = genCode();
-  var u = { id: genId(), uname: uname, ph: hashPwd(uname, pwd), secQ: secQ, secA: norm(secA), rc: code, created: TODAY };
+  var u = { id: genId(), uname: uname, email: email||"", ph: hashPwd(uname, pwd), secQ: secQ, secA: norm(secA), rc: code, created: TODAY };
   users.push(u);
   saveUsers(users);
   DB.set('sess', u.id);
@@ -445,6 +502,7 @@ function doRecover(uname, method, val, newPwd) {
   if (idx < 0) return { ok: false, msg: 'Usuario no encontrado.' };
   var u = users[idx];
   if (method === 'code' && val.toUpperCase() !== u.rc) return { ok: false, msg: 'Código incorrecto.' };
+  if (method === 'email') { if (!u.email) return { ok: false, msg: 'Este usuario no tiene correo electrónico registrado.' }; if (norm(val) !== norm(u.email)) return { ok: false, msg: 'El correo electrónico no coincide con el registrado.' }; return { ok: 'email_ok', code: u.rc, user: u }; }
   if (method === 'sec' && norm(val) !== u.secA) return { ok: false, msg: 'Respuesta incorrecta.' };
   if (newPwd.length < 4) return { ok: false, msg: 'La contraseña debe tener al menos 4 caracteres.' };
   users[idx] = Object.assign({}, u, { ph: hashPwd(uname, newPwd) });
@@ -659,9 +717,9 @@ function buildAuth() {
       var opts = SQS.map(function(q, i) { return '<option value="' + i + '">' + esc(q) + '</option>'; }).join('');
       inner = err +
         '<label class="lbl">Usuario (sin espacios, mín. 3 caracteres)</label><input class="inp" id="r-u" placeholder="tuusuario" autocomplete="username"/>' +
-        '<label class="lbl">Contraseña (mín. 4 caracteres)</label><input class="inp" id="r-p" type="password" placeholder="••••••" autocomplete="new-password"/>' +
-        '<label class="lbl">Confirmar contraseña</label><input class="inp" id="r-p2" type="password" placeholder="••••••"/>' +
-        '<label class="lbl">Pregunta de seguridad</label><select class="inp" id="r-sq">' + opts + '</select>' +
+        '<label class="lbl">Contraseña (mín. 4 caracteres)</label><div class="pw-wrap"><input class="inp" id="r-p" type="password" placeholder="••••••" autocomplete="new-password"><button class="pw-eye" data-pw="r-p" type="button">👁</button></div>' +
+        '<label class="lbl">Confirmar contraseña</label><div class="pw-wrap"><input class="inp" id="r-p2" type="password" placeholder="••••••"><button class="pw-eye" data-pw="r-p2" type="button">👁</button></div>' +
+        '<label class="lbl">Correo electrónico (para recuperar cuenta)</label><input class="inp" id="r-email" type="email" placeholder="correo@ejemplo.com" autocomplete="email"/><label class="lbl">Pregunta de seguridad</label><select class="inp" id="r-sq">' + opts + '</select>' +
         '<label class="lbl">Respuesta</label><input class="inp" id="r-sa" placeholder="Tu respuesta"/>' +
         '<button class="btn btn-pri full" id="btn-reg">Crear cuenta</button>';
     }
@@ -671,13 +729,13 @@ function buildAuth() {
         '<p style="font-size:13px;color:var(--t2);margin-bottom:14px;line-height:1.5">Ingresá tu usuario para recuperar el acceso.</p>' +
         '<label class="lbl">Usuario</label><input class="inp" id="f-u" placeholder="Nombre de usuario"/>' +
         '<label class="lbl">Recuperar con</label>' +
-        '<select class="inp" id="f-mt"><option value="code">Código de recuperación</option><option value="sec">Pregunta de seguridad</option></select>' +
+        '<select class="inp" id="f-mt"><option value="code">Código de recuperación</option><option value="sec">Pregunta de seguridad</option><option value="email">Correo electrónico</option></select>' +
         '<button class="btn btn-pri full" id="btn-fnext">Continuar →</button>' +
         '<div class="auth-footer"><button class="lnk" id="btn-tologin">← Volver al inicio de sesión</button></div>';
     } else {
-      var lbl2 = S.rMethod === 'code' ? 'Código de recuperación (8 caracteres)' : 'Respuesta a tu pregunta de seguridad';
+      var lbl2 = S.rMethod === 'code' ? 'Código de recuperación (8 caracteres)' : S.rMethod === 'email' ? 'Correo electrónico registrado' : 'Respuesta a tu pregunta de seguridad';
       inner = err +
-        '<label class="lbl">' + lbl2 + '</label><input class="inp" id="f-v" placeholder="' + (S.rMethod==='code'?'Ej: ABCD1234':'Tu respuesta') + '"/>' +
+        '<label class="lbl">' + lbl2 + '</label><input class="inp" id="f-v" placeholder="' + (S.rMethod==='code'?'Ej: ABCD1234':S.rMethod==='email'?'correo@ejemplo.com':'Tu respuesta') + '"/>' +
         '<label class="lbl">Nueva contraseña</label><input class="inp" id="f-np" type="password" placeholder="Mín. 4 caracteres"/>' +
         '<button class="btn btn-pri full" id="btn-freset">Restablecer contraseña</button>' +
         '<div class="auth-footer"><button class="lnk" id="btn-tologin">← Volver</button></div>';
@@ -719,10 +777,10 @@ function bindAuth() {
   on('btn-tocloud', function() { S.atab = 'cloud'; S.aerr = ''; S.amsg = ''; render(); });
   on('btn-reg', function() {
     var SQS = ['¿Nombre de tu primera mascota?','¿Ciudad donde naciste?','¿Nombre de tu escuela primaria?','¿Color favorito de la infancia?','¿Apellido materno de tu madre?'];
-    var u = val('r-u').trim(), p = val('r-p'), p2 = val('r-p2'), sqIdx = val('r-sq'), sa = val('r-sa').trim();
+    var u = val('r-u').trim(), p = val('r-p'), p2 = val('r-p2'), em = val('r-email').trim(), sqIdx = val('r-sq'), sa = val('r-sa').trim();
     if (!u || !p || !p2 || !sa) { S.aerr = 'Completá todos los campos.'; render(); return; }
     if (p !== p2) { S.aerr = 'Las contraseñas no coinciden.'; render(); return; }
-    var r = doRegister(u, p, SQS[parseInt(sqIdx) || 0], sa);
+    var r = doRegister(u, p, em, SQS[parseInt(sqIdx) || 0], sa);
     if (!r.ok) { S.aerr = r.msg; render(); return; }
     S.rcode = r.code; render();
   });
@@ -737,11 +795,16 @@ function bindAuth() {
       var el = document.getElementById('f-v');
       if (el) el.placeholder = found.secQ || 'Tu respuesta';
     }
+    if (mt === 'email') {
+      var el2 = document.getElementById('f-v');
+      if (el2) el2.placeholder = 'correo@ejemplo.com';
+    }
   });
   on('btn-freset', function() {
     var v = val('f-v').trim(), np = val('f-np');
     if (!v || !np) { S.aerr = 'Completá todos los campos.'; render(); return; }
     var r = doRecover(S.rUser, S.rMethod, v, np);
+    if (r.ok === 'email_ok') { S.amsg = '✅ Correo verificado. Tu código de recuperación es: ' + r.code + '. Úlalo en el campo de código.'; S.rMethod = 'code'; S.rStep = 2; render(); return; }
     if (!r.ok) { S.aerr = r.msg; render(); return; }
     S.atab = 'login'; S.rStep = 1; S.aerr = ''; S.amsg = 'Contraseña restablecida. Ya podés iniciar sesión.'; render();
   });
