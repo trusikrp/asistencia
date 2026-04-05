@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Gestor de Asistencia Docente</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px}
+:root{
+  --navy:#17375e;--nav2:#1e4d82;--nav3:#2878c4;--sky:#deedf9;--sky2:#b8d5ef;
+  --ok:#1e7a47;--okb:#e9f7ef;--ok2:#27ae60;
+  --warn:#c67c10;--wb:#fef5e4;
+  --red:#b92d20;--rb:#fdecea;
+  --bg:#f0f4f8;--bg2:#e8eef5;--sfc:#ffffff;--sfc2:#f6f8fa;
+  --tx:#1a2733;--t2:#4a6070;--t3:#8fa5b2;
+  --bdr:#dde5ec;--bdr2:#c0d0da;
+  --r6:6px;--r8:8px;--r10:10px;--r14:14px;--r18:18px;
+  --sh1:0 1px 3px rgba(0,0,0,.08);--sh2:0 2px 8px rgba(0,0,0,.10);--sh3:0 4px 16px rgba(0,0,0,.13);
+  --sw:290px
+}
+body{background:var(--bg);display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100%;overflow:hidden}
+#toasts{position:fixed;top:14px;right:14px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:10px 16px;border-radius:var(--r10);font-size:13px;font-weight:600;color:#fff;min-width:180px;max-width:300px;box-shadow:var(--sh3);pointer-events:all;animation:tIn .22s ease}
+.t-ok{background:#27ae60}.t-err{background:#c0392b}.t-info{background:var(--nav3)}
+@keyframes tIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+/* AUTH */
+.auth-bg{display:flex;align-items:center;justify-content:center;min-height:100dvh;background:linear-gradient(135deg,#0d2444 0%,#1a5276 65%,#2878c4 100%);padding:20px}
+.auth-card{background:#fff;border-radius:var(--r18);padding:30px 26px 26px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.auth-logo{text-align:center;margin-bottom:22px}
+.auth-ico{font-size:48px;line-height:1}
+.auth-title{font-size:21px;font-weight:800;color:var(--navy);margin-top:8px}
+.auth-sub{font-size:12px;color:var(--t2);margin-top:2px}
+.tab-row{display:flex;background:var(--sfc2);border-radius:var(--r10);padding:3px;margin-bottom:20px}
+.tpill{flex:1;border:none;background:transparent;border-radius:var(--r8);padding:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--t2);transition:all .15s;font-family:inherit}
+.tpill.on{background:#fff;color:var(--navy);box-shadow:var(--sh1)}
+label.lbl{font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.6px;text-transform:uppercase;display:block;margin-bottom:4px;margin-top:12px}
+.inp{width:100%;border:1.5px solid var(--bdr);border-radius:var(--r8);padding:10px 12px;font-size:14px;color:var(--tx);outline:none;background:#fff;font-family:inherit;transition:border-color .15s;display:block}
+.inp:focus{border-color:var(--nav3);box-shadow:0 0 0 3px rgba(40,120,196,.12)}
+select.inp{cursor:pointer}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:var(--r8);padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+.btn-pri{background:var(--nav2);color:#fff}.btn-pri:hover{background:var(--navy)}
+.btn-pri.full{width:100%;margin-top:14px}
+.btn-sec{background:var(--sky);color:var(--nav2)}.btn-sec:hover{background:var(--sky2)}
+.btn-ok{background:var(--okb);color:var(--ok);border:1px solid #b2ddc4}.btn-ok:hover{background:#d4f0e0}
+.btn-red{background:var(--rb);color:var(--red);border:1px solid #f5c2bc}.btn-red:hover{background:#f9d5d1}
+.btn-ghost{background:var(--sfc2);color:var(--tx);border:1px solid var(--bdr)}.btn-ghost:hover{background:var(--bg2)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:var(--r6)}
+.btn-dis{opacity:.4;cursor:not-allowed;pointer-events:none}
+.lnk{background:none;border:none;color:var(--nav3);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;font-family:inherit}
+.errmsg{background:var(--rb);color:var(--red);border-radius:var(--r8);padding:9px 12px;font-size:13px;margin:8px 0}
+.okmsg{background:var(--okb);color:var(--ok);border-radius:var(--r8);padding:9px 12px;font-size:13px;margin:8px 0}
+.rcode-wrap{background:var(--sky);border:1px solid var(--sky2);border-radius:var(--r10);padding:14px;text-align:center;margin:12px 0}
+.rcode{font-size:26px;font-weight:900;letter-spacing:4px;color:var(--navy);margin:4px 0}
+.divider{display:flex;align-items:center;gap:10px;color:var(--t3);font-size:12px;margin:14px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bdr)}
+.auth-footer{text-align:center;margin-top:12px;font-size:12px;color:var(--t2)}
+.pw-wrap{position:relative;display:block}
+.pw-wrap .inp{padding-right:42px}
+.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:17px;color:var(--t2);padding:4px;line-height:1;user-select:none}
+.sort-bar{display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--sfc);border-bottom:1px solid var(--bdr);flex-shrink:0;font-size:12px;color:var(--t2)}
+.sort-btn{border:1.5px solid var(--bdr);background:var(--sfc2);color:var(--t2);border-radius:var(--r6);padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .14s}
+.sort-btn.on{background:var(--sky);color:var(--nav2);border-color:var(--sky2)}
+.sort-btn:hover{border-color:var(--bdr2);background:var(--bg2)}
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden}
+.sdb{width:100%;flex-shrink:0;background:var(--navy);display:flex;flex-direction:column;overflow:hidden}
+.main{display:none;flex:1;flex-direction:column;overflow:hidden;background:var(--bg)}
+.layout.home .sdb{display:flex}.layout.home .main{display:none}
+.layout.crs .sdb{display:none}.layout.crs .main{display:flex}
+@media(min-width:700px){
+  .layout.home .sdb,.layout.crs .sdb{display:flex;width:var(--sw)}
+  .layout.home .main,.layout.crs .main{display:flex}
+  .btnback{display:none!important}
+}
+/* SIDEBAR */
+.sb-hdr{padding:14px 12px 10px;border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0}
+.sb-brand{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.sb-title{font-size:14px;font-weight:800;color:#fff}
+.sb-ver{font-size:10px;color:rgba(255,255,255,.45);margin-top:1px}
+.sb-user-row{display:flex;align-items:center;justify-content:space-between}
+.sb-user{font-size:12px;color:rgba(255,255,255,.75)}
+.sync-badge{font-size:10px;font-weight:700;border-radius:5px;padding:2px 7px}
+.sync-ok{background:rgba(39,174,96,.25);color:#7de0a8}
+.sync-ing{background:rgba(255,200,50,.2);color:#ffd580}
+.sync-err{background:rgba(192,57,43,.3);color:#f39090}
+.sync-off{background:rgba(255,255,255,.08);color:rgba(255,255,255,.35)}
+.sb-acts{display:flex;gap:5px;padding:8px 10px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-act{flex:1;background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.85);border-radius:var(--r6);padding:7px 4px;font-size:10px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s;text-align:center}
+.sb-act:hover{background:rgba(255,255,255,.2)}
+.sb-act:disabled{opacity:.35;cursor:not-allowed}
+.sb-section{font-size:10px;font-weight:700;color:rgba(255,255,255,.38);letter-spacing:.8px;padding:10px 12px 3px;text-transform:uppercase;flex-shrink:0}
+.sb-list{flex:1;overflow-y:auto;padding:4px 8px 12px}
+.sb-list::-webkit-scrollbar{width:3px}.sb-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
+.cc{display:flex;align-items:flex-start;gap:7px;border-radius:var(--r10);margin-bottom:5px;padding:10px 9px 10px 11px;cursor:pointer;border:1px solid transparent;transition:all .12s}
+.cc:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12)}
+.cc.active{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.25)}
+.cc-body{flex:1;min-width:0}
+.cc-name{font-weight:700;font-size:13px;color:#fff;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cc-meta{font-size:11px;color:rgba(255,255,255,.5);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:5px}
+.cc-chips{display:flex;flex-wrap:wrap;gap:3px}
+.chip{border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700}
+.chip-b{background:rgba(255,255,255,.12);color:rgba(255,255,255,.8)}
+.chip-d{background:rgba(255,255,255,.06);color:rgba(255,255,255,.45);border:1px solid rgba(255,255,255,.12)}
+.cc-btns{display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+.ccbtn{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.75);border-radius:var(--r6);padding:4px 8px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .12s}
+.ccbtn:hover{background:rgba(255,255,255,.22)}
+.ccbtn.del{background:rgba(192,57,43,.25);color:#f39090}
+.ccbtn.del:hover{background:rgba(192,57,43,.45)}
+.sb-warn{background:rgba(192,57,43,.15);border:1px solid rgba(192,57,43,.3);border-radius:var(--r8);margin:4px 8px 6px;padding:8px 10px;font-size:11px;color:#f8c0b8;line-height:1.4}
+.sb-empty{padding:32px 16px;text-align:center}
+.sb-empty-ico{font-size:36px;margin-bottom:8px}
+.sb-empty-ttl{font-size:14px;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:4px}
+.sb-empty-sub{font-size:11px;color:rgba(255,255,255,.38);line-height:1.5}
+/* MAIN */
+.mhdr{background:var(--nav2);color:#fff;padding:12px 14px 10px;flex-shrink:0}
+.btnback{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:var(--r6);padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;margin-bottom:5px;display:inline-block;font-family:inherit}
+.m-name{font-size:17px;font-weight:800;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.m-meta{font-size:11px;opacity:.75;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabbar{display:flex;background:var(--navy);flex-shrink:0;overflow-x:auto;border-bottom:2px solid rgba(255,255,255,.07)}
+.tabbar::-webkit-scrollbar{display:none}
+.tabbtn{flex:1;min-width:56px;background:transparent;border:none;border-bottom:3px solid transparent;color:rgba(255,255,255,.42);padding:9px 4px;cursor:pointer;font-size:9.5px;font-weight:600;letter-spacing:.2px;font-family:inherit;margin-bottom:-2px;white-space:nowrap;transition:all .14s}
+.tabbtn.on{color:#fff;border-bottom-color:#fff;font-weight:700}
+.tabbtn-ico{display:block;font-size:15px;margin-bottom:2px}
+.tc{flex:1;overflow-y:auto;background:var(--bg)}
+.tc::-webkit-scrollbar{width:5px}.tc::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:5px}
+/* ATTENDANCE */
+.att-top{display:flex;align-items:flex-start;gap:10px;padding:12px;background:var(--sfc);border-bottom:1px solid var(--bdr);flex-shrink:0}
+.att-lbl{font-size:10px;font-weight:700;color:var(--t2);letter-spacing:.6px;text-transform:uppercase;display:block;margin-bottom:3px}
+.date-inp{border:none;background:transparent;font-size:17px;font-weight:800;color:var(--nav2);outline:none;cursor:pointer;font-family:inherit}
+.day-badge{background:var(--sky);color:var(--nav2);border-radius:var(--r6);padding:2px 8px;font-size:11.5px;font-weight:700}
+.cnt-block{text-align:center;min-width:62px}
+.cnt-val{font-size:22px;font-weight:900;line-height:1;color:var(--nav3)}
+.cnt-done{color:var(--ok2)}
+.done-badge{font-size:10px;font-weight:700;color:var(--ok);background:var(--okb);border-radius:5px;padding:2px 7px;margin-top:3px;display:inline-block}
+.srch-wrap{padding:8px 12px;background:var(--sfc);border-bottom:1px solid var(--bdr);flex-shrink:0;display:flex;gap:6px;align-items:center}
+.srch{flex:1;border:1.5px solid var(--bdr);border-radius:var(--r8);padding:7px 11px;font-size:13px;outline:none;background:#fff;color:var(--tx);font-family:inherit;transition:border-color .15s}
+.srch:focus{border-color:var(--nav3)}
+.qrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 10px;flex-shrink:0}
+.qbox{background:var(--sfc);border-radius:var(--r10);padding:8px 10px;border:1px solid var(--bdr)}
+.qlbl{font-size:9.5px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;text-align:center;margin-bottom:5px}
+.qbtns{display:flex;gap:4px}
+.qb{flex:1;border:none;border-radius:var(--r6);padding:7px 3px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+.qb-p{background:var(--ok2);color:#fff}.qb-a{background:var(--rb);color:var(--red)}
+.chdr{display:flex;padding:4px 11px 2px;border-bottom:1px solid var(--bdr)}
+.chn{width:22px;font-size:10px;font-weight:700;color:var(--t3)}
+.chnm{flex:1;font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
+.chh{width:44px;text-align:center;font-size:10px;font-weight:700;color:var(--t2)}
+.slist{padding:5px 8px 14px}
+.srow{background:var(--sfc);border-radius:var(--r8);padding:8px 9px;margin-bottom:4px;display:flex;align-items:center;gap:6px;border-left:3px solid var(--bdr);border-right:1px solid var(--bdr);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)}
+.snum{width:20px;font-size:10px;color:var(--t3);font-weight:700;text-align:center;flex-shrink:0}
+.sinf{flex:1;min-width:0}
+.sap{font-weight:700;font-size:13.5px;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.snm{font-size:11px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.abtn{width:44px;height:44px;border-radius:var(--r8);border:1.5px solid var(--bdr);background:var(--sfc2);color:var(--t3);font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;font-family:inherit}
+.abtn-P{background:var(--ok2);color:#fff;border-color:var(--ok2)}
+.abtn-A{background:var(--red);color:#fff;border-color:var(--red)}
+.lgnd{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;padding:10px 12px;background:var(--sfc);margin:0 8px 10px;border-radius:var(--r10);border:1px solid var(--bdr);font-size:11px;color:var(--t2)}
+.ld{width:23px;height:21px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:11px;color:#fff;vertical-align:middle}
+/* STATS */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--nav3) 100%);margin:12px;border-radius:var(--r14);padding:16px 18px;color:#fff}
+.hero-lbl{font-size:11px;opacity:.75;font-weight:600;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hero-grid{display:flex;justify-content:space-around}
+.hero-it{text-align:center}
+.hero-num{font-size:28px;font-weight:900;line-height:1}
+.hero-sub{font-size:10px;opacity:.7;margin-top:3px}
+.ri{background:var(--sfc);border-radius:var(--r10);margin:0 12px 10px;padding:9px 12px;display:flex;gap:8px;align-items:flex-start;border:1px solid var(--bdr);font-size:11.5px;color:var(--t2);line-height:1.5}
+.stc{background:var(--sfc);border-radius:var(--r10);margin:0 12px 5px;overflow:hidden;border:1px solid var(--bdr)}
+.str{display:flex;align-items:center;padding:11px 12px;gap:10px;cursor:pointer;transition:background .12s}
+.str:hover{background:var(--sfc2)}
+.stnm{flex:1;min-width:0;font-weight:700;font-size:13px;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stnums{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.si{text-align:center}
+.sl{font-size:9px;color:var(--t3);font-weight:700;letter-spacing:.5px}
+.sv{font-size:15px;font-weight:800}
+.sv-ok{color:var(--ok2)}.sv-no{color:var(--red)}
+.pctb{border-radius:var(--r6);padding:5px 10px;font-size:13px;font-weight:800;min-width:52px;text-align:center;color:#fff}
+.chev{font-size:12px;color:var(--t3);transition:transform .2s;flex-shrink:0}
+.chev-open{transform:rotate(180deg)}
+.pb{height:3px;background:var(--sfc2)}
+.pf{height:100%;transition:width .4s}
+.histp{padding:10px 12px 12px;border-top:1px solid var(--bdr);background:var(--sfc2)}
+.histl{font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.hrow{display:flex;align-items:center;margin-bottom:4px;gap:7px}
+.hdt{font-size:12px;font-weight:600;color:var(--tx);flex:1}
+.hcells{display:flex;gap:4px}
+.hcell{width:29px;height:21px;border-radius:5px;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+/* TABLERO */
+.tbl-wrap{overflow-x:auto;padding:10px}
+table.tbl{border-collapse:collapse;font-size:11px;min-width:100%}
+.tbl th{background:var(--navy);color:#fff;padding:6px 7px;white-space:nowrap;font-size:10px;font-weight:700;text-align:center;position:sticky;top:0;z-index:8}
+.tbl th.stky{position:sticky;left:0;z-index:15;background:var(--nav2);text-align:left;min-width:145px}
+.tbl td{padding:4px 5px;border:1px solid var(--bdr);white-space:nowrap;text-align:center}
+.tbl td.stky{position:sticky;left:0;z-index:5;background:#fff;font-weight:700;color:var(--tx);border-right:2px solid var(--bdr2);text-align:left;padding-left:9px;font-size:11px}
+.tbl tr:nth-child(even) td.stky{background:#fafcfe}
+.tbl tr:hover td{background:#f0f7ff}.tbl tr:hover td.stky{background:#e8f3fd}
+.cp{background:#d5f5e3;color:#0d5e2a;font-weight:700}
+.ca{background:#fde8e8;color:#8b1a1a;font-weight:700}
+.cn{background:var(--sfc2);color:var(--t3)}
+.ctot{background:var(--sky);color:var(--nav2);font-weight:700}
+.cpct{font-weight:800}
+.tsum td{background:#f0f7ff!important;font-weight:700}
+/* ALUMNOS */
+.al-top{padding:10px 12px;display:flex;gap:8px;align-items:center;border-bottom:1px solid var(--bdr);background:var(--sfc);flex-shrink:0;flex-wrap:wrap}
+.al-list{padding:8px}
+.ar{background:var(--sfc);border-radius:var(--r8);padding:9px 11px;margin-bottom:4px;display:flex;align-items:center;gap:8px;border:1px solid var(--bdr)}
+.ar:hover{border-color:var(--bdr2)}
+.anum{width:30px;height:30px;border-radius:50%;background:var(--sky);color:var(--nav2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0}
+.ainf{flex:1;min-width:0}
+.aap{font-weight:700;font-size:14px;color:var(--tx)}
+.anm{font-size:11.5px;color:var(--t2)}
+.adni{font-size:11px;color:var(--t3)}
+.ar-acts{display:flex;gap:5px;flex-shrink:0}
+/* REPORTES */
+.rep-pad{padding:12px}
+.rep-card{background:var(--sfc);border-radius:var(--r14);padding:18px;margin-bottom:10px;border:1px solid var(--bdr)}
+.rep-title{font-size:15px;font-weight:800;color:var(--tx);margin-bottom:4px}
+.rep-sub{font-size:12.5px;color:var(--t2);margin-bottom:14px;line-height:1.5}
+/* MODAL */
+.ovl{position:fixed;inset:0;background:rgba(5,15,35,.65);display:flex;align-items:flex-end;justify-content:center;z-index:500}
+.modal{background:#fff;border-radius:var(--r18) var(--r18) 0 0;padding:22px 18px 30px;width:100%;max-width:560px;max-height:90dvh;overflow-y:auto;animation:slideIn .22s ease}
+@keyframes slideIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-ttl{font-weight:800;font-size:18px;color:var(--tx);margin-bottom:16px}
+.modal-row{display:flex;gap:8px;margin-top:16px}
+.swap-hint{background:var(--sky);border-radius:var(--r8);padding:9px 12px;font-size:13px;color:var(--nav2);font-weight:600;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.imp-hint{font-size:12px;color:var(--t2);background:var(--sfc2);border-radius:var(--r8);padding:10px 12px;margin-bottom:10px;line-height:1.6;border:1px solid var(--bdr)}
+.ftxa{width:100%;border:1.5px solid var(--bdr);border-radius:var(--r8);padding:10px 12px;font-size:13px;color:var(--tx);outline:none;background:#fff;margin-bottom:10px;font-family:inherit;resize:vertical;min-height:110px}
+.ftxa:focus{border-color:var(--nav3)}
+.modal-btns{display:flex;gap:10px;margin-top:8px}
+.m-cancel{flex:1;background:var(--sfc2);color:var(--tx);border:1.5px solid var(--bdr);border-radius:var(--r10);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.m-save{flex:2;background:var(--nav2);color:#fff;border:none;border-radius:var(--r10);padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.m-save:hover{background:var(--navy)}
+/* EMPTY */
+.empt{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;text-align:center;flex:1}
+.empt-ico{font-size:44px;margin-bottom:12px}
+.empt-ttl{font-size:16px;font-weight:800;color:var(--tx);margin-bottom:6px}
+.empt-sub{font-size:13px;color:var(--t2);line-height:1.6;max-width:260px}
+.mempty{text-align:center;padding:24px 14px;color:var(--t2);font-size:13px}
+.main-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;text-align:center;padding:40px;color:var(--t2)}
+/* CLOUD CARD */
+.cl-card{background:linear-gradient(135deg,#0d2444,#1a3f6a);border-radius:var(--r14);padding:18px;margin-bottom:14px;color:#fff}
+.cl-ttl{font-size:15px;font-weight:800;margin-bottom:4px}
+.cl-sub{font-size:12px;opacity:.75;line-height:1.5;margin-bottom:12px}
+.cl-inp{width:100%;border:1.5px solid rgba(255,255,255,.25);border-radius:var(--r8);padding:9px 12px;font-size:13px;color:#fff;background:rgba(255,255,255,.1);font-family:inherit;outline:none;margin-bottom:8px;display:block}
+.cl-inp:focus{border-color:rgba(255,255,255,.6)}
+.cl-inp::placeholder{color:rgba(255,255,255,.4)}
+.cl-lbl{font-size:11px;color:rgba(255,255,255,.6);font-weight:700;letter-spacing:.5px;text-transform:uppercase;display:block;margin-bottom:4px;margin-top:10px}
+.cl-status{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:7px 10px;border-radius:var(--r6);margin-bottom:10px}
+.cls-ok{background:rgba(39,174,96,.2);color:#7de0a8}
+.cls-err{background:rgba(192,57,43,.2);color:#f39090}
+.cls-off{background:rgba(255,255,255,.1);color:rgba(255,255,255,.5)}
+</style>
+</head>
+<body>
+<div id="toasts"></div>
+<div id="app"></div>
+<script>
+// ===== CONSTANTS =====
+const TODAY = new Date().toISOString().split('T')[0];
+const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MAX_COURSES = 10;
+const PFX = 'ga3_';
+const JBIN = 'https://api.jsonbin.io/v3';
+
+// ===== TOAST =====
+function toast(msg, type, dur) {
+  type = type || 'info';
+  dur = dur || 3200;
+  const box = document.getElementById('toasts');
+  if (!box) return;
+  const el = document.createElement('div');
+  el.className = 'toast t-' + type;
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(function() {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity .3s';
+    setTimeout(function() { el.remove(); }, 300);
+  }, dur);
+}
+
+// ===== STORAGE =====
+const DB = {
+  get: function(k) {
+    try { var v = localStorage.getItem(PFX + k); return v ? JSON.parse(v) : null; }
+    catch(e) { return null; }
+  },
+  set: function(k, v) {
+    try { localStorage.setItem(PFX + k, JSON.stringify(v)); }
+    catch(e) { toast('Error al guardar datos.', 'err'); }
+  },
+  del: function(k) {
+    try { localStorage.removeItem(PFX + k); }
+    catch(e) {}
+  }
+};
+
+// ===== UTILS =====
+function esc(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function norm(s) {
+  return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+}
+function fmtDate(d) {
+  if (!d) return '';
+  var p = d.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+function fmtDateS(d) {
+  if (!d) return '';
+  var p = d.split('-');
+  return p[2] + '/' + p[1];
+}
+function dayName(d) {
+  if (!d) return '';
+  return DAYS[new Date(d + 'T12:00:00').getDay()];
+}
+function pctColor(p) {
+  if (p === null || p === undefined) return '#aaa';
+  if (p >= 75) return '#27ae60';
+  if (p >= 50) return '#e67e22';
+  return '#c0392b';
+}
+function genId() {
+  return 'i' + Date.now() + Math.random().toString(36).slice(2, 6);
+}
+function sortStudents(arr) {
+  var by = (S && S.sortBy) ? S.sortBy : 'apellido';
+  return arr.slice().sort(function(a, b) {
+    var r;
+    if (by === 'nombre') {
+      r = norm(a.nombre).localeCompare(norm(b.nombre));
+      if (r !== 0) return r;
+      return norm(a.apellido).localeCompare(norm(b.apellido));
+    }
+    r = norm(a.apellido).localeCompare(norm(b.apellido));
+    if (r !== 0) return r;
+    return norm(a.nombre).localeCompare(norm(b.nombre));
+  });
+}
+function buildSortBar() {
+  var by = S.sortBy;
+  return '<div class="sort-bar">Ordenar: ' +
+    '<button class="sort-btn' + (by==='apellido'?' on':'') + '" data-sortby="apellido">Apellido ↑</button>' +
+    '<button class="sort-btn' + (by==='nombre'?' on':'') + '" data-sortby="nombre">Nombre ↑</button>' +
+    '<span style="margin-left:auto;font-size:11px;color:var(--t3)">' +
+    (by==='apellido'?'A–Z por apellido':'A–Z por nombre') + '</span>' +
+    '</div>';
+}
+function pwField(id, placeholder, autocomplete) {
+  var ac = autocomplete ? ' autocomplete="' + autocomplete + '"' : '';
+  return '<div class="pw-wrap"><input class="inp" id="' + id + '" type="password" placeholder="' + placeholder + '"' + ac + '/>' +
+    '<button class="pw-eye" data-pw="' + id + '" type="button" title="Mostrar/ocultar contraseña">👁</button></div>';
+}
+function parseName(line, fmt) {
+  var t = (line || '').trim();
+  if (!t) return null;
+  var ap, nm;
+  if (t.indexOf(',') >= 0) {
+    var parts = t.split(',');
+    ap = parts[0].trim();
+    nm = parts.slice(1).join(',').trim();
+    if (fmt === 'nm_ap') { var tmp = ap; ap = nm; nm = tmp; }
+  } else {
+    var words = t.split(/\s+/);
+    if (words.length < 2) return null;
+    if (fmt === 'nm_ap') {
+      nm = words[0];
+      ap = words.slice(1).join(' ');
+    } else {
+      ap = words[0];
+      nm = words.slice(1).join(' ');
+    }
+  }
+  if (!ap || !nm) return null;
+  var cap = function(s) { return s.charAt(0).toUpperCase() + s.slice(1); };
+  return { ap: cap(ap.trim()), nm: cap(nm.trim()) };
+}
+function calcStats(students, sessions) {
+  var dates = Object.keys(sessions);
+  var total = dates.length * 2;
+  return students.map(function(s) {
+    var p = 0, a = 0;
+    dates.forEach(function(d) {
+      var at = (sessions[d] || {})[s.id] || { h1: null, h2: null };
+      if (at.h1 === 'P') p++; else if (at.h1 === 'A') a++;
+      if (at.h2 === 'P') p++; else if (at.h2 === 'A') a++;
+    });
+    var pct = total > 0 ? Math.round(p / total * 100) : null;
+    return Object.assign({}, s, { p: p, a: a, total: total, pct: pct });
+  });
+}
+function getAtt(sessions, sid, h, d) {
+  var day = sessions[d] || {};
+  var stu = day[sid] || {};
+  var v = stu[h];
+  return (v === undefined || v === null) ? null : v;
+}
+function cap1(s) {
+  if (!s) return '';
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// ===== AUTH =====
+function hashPwd(u, p) {
+  return btoa(encodeURIComponent(u.toLowerCase() + ':ga3:' + p + ':v3'));
+}
+function genCode() {
+  return (Math.random().toString(36).slice(2, 6) + Math.random().toString(36).slice(2, 6)).toUpperCase();
+}
+function getUsers() { return DB.get('users') || []; }
+function saveUsers(u) { DB.set('users', u); }
+function getCurrentUser() {
+  var id = DB.get('sess');
+  if (!id) return null;
+  return getUsers().find(function(u) { return u.id === id; }) || null;
+}
+function doLogin(uname, pwd) {
+  var h = hashPwd(uname, pwd);
+  var users = getUsers();
+  var u = users.find(function(x) { return x.uname.toLowerCase() === uname.toLowerCase() && x.ph === h; });
+  if (!u) return { ok: false, msg: 'Usuario o contraseña incorrectos.' };
+  DB.set('sess', u.id);
+  return { ok: true, user: u };
+}
+function doRegister(uname, pwd, secQ, secA) {
+  var users = getUsers();
+  if (users.find(function(x) { return x.uname.toLowerCase() === uname.toLowerCase(); })) {
+    return { ok: false, msg: 'El nombre de usuario ya existe.' };
+  }
+  if (uname.length < 3) return { ok: false, msg: 'El usuario debe tener al menos 3 caracteres.' };
+  if (pwd.length < 4) return { ok: false, msg: 'La contraseña debe tener al menos 4 caracteres.' };
+  var code = genCode();
+  var u = { id: genId(), uname: uname, ph: hashPwd(uname, pwd), secQ: secQ, secA: norm(secA), rc: code, created: TODAY };
+  users.push(u);
+  saveUsers(users);
+  DB.set('sess', u.id);
+  return { ok: true, user: u, code: code };
+}
+function doRecover(uname, method, val, newPwd) {
+  var users = getUsers();
+  var idx = users.findIndex(function(x) { return x.uname.toLowerCase() === uname.toLowerCase(); });
+  if (idx < 0) return { ok: false, msg: 'Usuario no encontrado.' };
+  var u = users[idx];
+  if (method === 'code' && val.toUpperCase() !== u.rc) return { ok: false, msg: 'Código incorrecto.' };
+  if (method === 'sec' && norm(val) !== u.secA) return { ok: false, msg: 'Respuesta incorrecta.' };
+  if (newPwd.length < 4) return { ok: false, msg: 'La contraseña debe tener al menos 4 caracteres.' };
+  users[idx] = Object.assign({}, u, { ph: hashPwd(uname, newPwd) });
+  saveUsers(users);
+  return { ok: true };
+}
+function doLogout() { DB.del('sess'); }
+
+// ===== CLOUD SYNC =====
+var CL = {
+  key: null, binId: null, status: 'off', timer: null,
+  init: function() {
+    var cfg = DB.get('cloud') || {};
+    this.key = cfg.key || null;
+    this.binId = cfg.binId || null;
+    this.status = (this.key && this.binId) ? 'ok' : 'off';
+  },
+  isOk: function() { return !!(this.key && this.binId); },
+  doPush: function() {
+    if (!this.isOk()) return;
+    var self = this;
+    if (self.timer) clearTimeout(self.timer);
+    self.timer = setTimeout(function() {
+      self.status = 'ing'; self.updateBadge();
+      var data = self.collect();
+      fetch(JBIN + '/b/' + self.binId, {
+        method: 'PUT',
+        headers: { 'X-Master-Key': self.key, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(function(r) {
+        self.status = r.ok ? 'ok' : 'err';
+        self.updateBadge();
+      }).catch(function() {
+        self.status = 'err';
+        self.updateBadge();
+      });
+    }, 2000);
+  },
+  doPull: function(cb) {
+    if (!this.isOk()) { if (cb) cb(null); return; }
+    var self = this;
+    self.status = 'ing'; self.updateBadge();
+    fetch(JBIN + '/b/' + self.binId + '/latest', {
+      headers: { 'X-Master-Key': self.key }
+    }).then(function(r) {
+      if (!r.ok) { self.status = 'err'; self.updateBadge(); if (cb) cb(null); return; }
+      return r.json();
+    }).then(function(j) {
+      if (!j) return;
+      self.status = 'ok'; self.updateBadge();
+      if (cb) cb(j.record || j);
+    }).catch(function() {
+      self.status = 'err'; self.updateBadge(); if (cb) cb(null);
+    });
+  },
+  doCreate: function(key, cb) {
+    var self = this;
+    var u = getCurrentUser();
+    var data = self.collect();
+    fetch(JBIN + '/b', {
+      method: 'POST',
+      headers: { 'X-Master-Key': key, 'Content-Type': 'application/json', 'X-Bin-Name': 'Asistencia-' + (u ? u.uname : 'doc') },
+      body: JSON.stringify(data)
+    }).then(function(r) {
+      if (!r.ok) { if (cb) cb(null, 'Error al crear bin. Verificá la clave API.'); return; }
+      return r.json();
+    }).then(function(j) {
+      if (!j) return;
+      var bid = (j.metadata && j.metadata.id) ? j.metadata.id : j.id;
+      if (cb) cb(bid, null);
+    }).catch(function(e) {
+      if (cb) cb(null, e.message);
+    });
+  },
+  collect: function() {
+    var u = getCurrentUser();
+    var courses = getCourses();
+    var sessions = {};
+    courses.forEach(function(c) { sessions[c.id] = DB.get('sess_' + c.id) || {}; });
+    return { v: 3, ts: new Date().toISOString(), uid: u ? u.id : null, uname: u ? u.uname : null, courses: courses, sessions: sessions };
+  },
+  updateBadge: function() {
+    var el = document.getElementById('sync-badge');
+    if (!el) return;
+    var map = {
+      ok: { cls: 'sync-ok', txt: '☁ Sincronizado' },
+      ing: { cls: 'sync-ing', txt: '↻ Sincronizando' },
+      err: { cls: 'sync-err', txt: '✕ Error sync' },
+      off: { cls: 'sync-off', txt: '☁ Sin nube' }
+    };
+    var m = map[this.status] || map.off;
+    el.className = 'sync-badge ' + m.cls;
+    el.textContent = m.txt;
+  }
+};
+
+// ===== DATA ACCESS =====
+function uid() {
+  var u = getCurrentUser();
+  return u ? u.id : '?';
+}
+function getCourses() {
+  var all = DB.get('courses') || [];
+  var myId = uid();
+  return all.filter(function(c) { return c.uid === myId; });
+}
+function saveCourses(courses) {
+  var all = DB.get('courses') || [];
+  var myId = uid();
+  var others = all.filter(function(c) { return c.uid !== myId; });
+  DB.set('courses', others.concat(courses));
+  CL.doPush();
+}
+function getSessions(cid) {
+  return DB.get('sess_' + cid) || {};
+}
+function saveSessions(cid, s) {
+  DB.set('sess_' + cid, s);
+  CL.doPush();
+}
+function lastSessionDate(cid) {
+  var dates = Object.keys(DB.get('sess_' + cid) || {}).sort();
+  return dates.length ? dates[dates.length - 1] : null;
+}
+
+// ===== GLOBAL STATE =====
+var S = {
+  scr: 'auth',
+  atab: 'login', aerr: '', amsg: '', rcode: '',
+  rStep: 1, rMethod: 'code', rUser: '',
+  view: 'home', courses: [], selC: null,
+  tab: 'asistencia', selDate: TODAY, search: '',
+  expSt: null,
+  showCF: false, editCI: null, cf: { name:'', inst:'', teacher:'', year:'' },
+  showSF: false, editSI: null, sf: { ap:'', nm:'', dni:'', fmt:'ap_nm', full:'' },
+  sfMode: 'fields',
+  sortBy: 'apellido',
+  showImp: false, imp: { txt:'', fmt:'ap_nm' },
+  showCloud: false,
+  showData: false,
+  delSt: null, delCo: null
+};
+
+// ===== FOCUS PRESERVATION =====
+var _fid = null, _fss = null, _fse = null;
+function saveFocus() {
+  var el = document.activeElement;
+  if (el && el.id) {
+    _fid = el.id;
+    try { _fss = el.selectionStart; _fse = el.selectionEnd; } catch(e) { _fss = _fse = null; }
+  } else { _fid = null; }
+}
+function restoreFocus() {
+  if (!_fid) return;
+  var el = document.getElementById(_fid);
+  if (!el) { _fid = null; return; }
+  el.focus();
+  if (_fss !== null) { try { el.setSelectionRange(_fss, _fse); } catch(e) {} }
+  _fid = null;
+}
+
+// ===== RENDER MAIN =====
+function render() {
+  saveFocus();
+  var root = document.getElementById('app');
+  if (S.scr === 'auth') {
+    root.innerHTML = buildAuth();
+    bindAuth();
+    setTimeout(restoreFocus, 0);
+    return;
+  }
+  var html = buildLayout();
+  if (S.showCF) html += buildCFModal();
+  if (S.showSF) html += buildSFModal();
+  if (S.showImp) html += buildImpModal();
+  if (S.showCloud) html += buildCloudModal();
+  if (S.showData) html += buildDataModal();
+  root.innerHTML = html;
+  bindApp();
+  setTimeout(function() { restoreFocus(); CL.updateBadge(); }, 0);
+}
+
+// ===== AUTH SCREEN =====
+function buildAuth() {
+  var t = S.atab, err = '', msg = '', inner = '';
+  if (S.aerr) err = '<div class="errmsg">' + esc(S.aerr) + '</div>';
+  if (S.amsg) msg = '<div class="okmsg">' + esc(S.amsg) + '</div>';
+  var tabs = '';
+  if (t !== 'forgot' && t !== 'cloud') {
+    tabs = '<div class="tab-row">' +
+      '<button class="tpill' + (t==='login'?' on':'') + '" data-atab="login">Iniciar sesión</button>' +
+      '<button class="tpill' + (t==='register'?' on':'') + '" data-atab="register">Registrarse</button>' +
+      '</div>';
+  }
+  if (t === 'login') {
+    inner = err +
+      '<label class="lbl">Usuario</label><input class="inp" id="l-u" placeholder="Nombre de usuario" autocomplete="username"/>' +
+      '<label class="lbl">Contraseña</label>' + pwField('l-p','••••••','current-password') +
+      '<button class="btn btn-pri full" id="btn-login">Ingresar</button>' +
+      '<div class="divider">o</div>' +
+      '<div style="text-align:center"><button class="lnk" id="btn-tocloud">☁ Restaurar desde la nube (otro dispositivo)</button></div>' +
+      '<div class="auth-footer"><button class="lnk" id="btn-toforgot">¿Olvidaste tu contraseña?</button></div>';
+  } else if (t === 'register') {
+    if (S.rcode) {
+      inner = '<div class="okmsg">¡Registro exitoso! Guardá este código:</div>' +
+        '<div class="rcode-wrap"><div style="font-size:11px;color:var(--nav2);font-weight:700;margin-bottom:4px">CÓDIGO DE RECUPERACIÓN</div>' +
+        '<div class="rcode">' + S.rcode + '</div>' +
+        '<div style="font-size:11px;color:var(--t2);margin-top:4px">Guardalo. Sin él no podrás recuperar tu cuenta.</div></div>' +
+        '<button class="btn btn-pri full" id="btn-enterapp">Entrar a la aplicación →</button>';
+    } else {
+      var SQS = ['¿Nombre de tu primera mascota?','¿Ciudad donde naciste?','¿Nombre de tu escuela primaria?','¿Color favorito de la infancia?','¿Apellido materno de tu madre?'];
+      var opts = SQS.map(function(q, i) { return '<option value="' + i + '">' + esc(q) + '</option>'; }).join('');
+      inner = err +
+        '<label class="lbl">Usuario (sin espacios, mín. 3 caracteres)</label><input class="inp" id="r-u" placeholder="tuusuario" autocomplete="username"/>' +
+        '<label class="lbl">Contraseña (mín. 4 caracteres)</label><input class="inp" id="r-p" type="password" placeholder="••••••" autocomplete="new-password"/>' +
+        '<label class="lbl">Confirmar contraseña</label><input class="inp" id="r-p2" type="password" placeholder="••••••"/>' +
+        '<label class="lbl">Pregunta de seguridad</label><select class="inp" id="r-sq">' + opts + '</select>' +
+        '<label class="lbl">Respuesta</label><input class="inp" id="r-sa" placeholder="Tu respuesta"/>' +
+        '<button class="btn btn-pri full" id="btn-reg">Crear cuenta</button>';
+    }
+  } else if (t === 'forgot') {
+    if (S.rStep === 1) {
+      inner = err + msg +
+        '<p style="font-size:13px;color:var(--t2);margin-bottom:14px;line-height:1.5">Ingresá tu usuario para recuperar el acceso.</p>' +
+        '<label class="lbl">Usuario</label><input class="inp" id="f-u" placeholder="Nombre de usuario"/>' +
+        '<label class="lbl">Recuperar con</label>' +
+        '<select class="inp" id="f-mt"><option value="code">Código de recuperación</option><option value="sec">Pregunta de seguridad</option></select>' +
+        '<button class="btn btn-pri full" id="btn-fnext">Continuar →</button>' +
+        '<div class="auth-footer"><button class="lnk" id="btn-tologin">← Volver al inicio de sesión</button></div>';
+    } else {
+      var lbl2 = S.rMethod === 'code' ? 'Código de recuperación (8 caracteres)' : 'Respuesta a tu pregunta de seguridad';
+      inner = err +
+        '<label class="lbl">' + lbl2 + '</label><input class="inp" id="f-v" placeholder="' + (S.rMethod==='code'?'Ej: ABCD1234':'Tu respuesta') + '"/>' +
+        '<label class="lbl">Nueva contraseña</label><input class="inp" id="f-np" type="password" placeholder="Mín. 4 caracteres"/>' +
+        '<button class="btn btn-pri full" id="btn-freset">Restablecer contraseña</button>' +
+        '<div class="auth-footer"><button class="lnk" id="btn-tologin">← Volver</button></div>';
+    }
+  } else if (t === 'cloud') {
+    inner = err + msg +
+      '<p style="font-size:13px;color:var(--t2);margin-bottom:14px;line-height:1.5">Ingresá los datos de tu cuenta en la nube para restaurar tus datos en este dispositivo.</p>' +
+      '<label class="lbl">Master Key de JSONBin.io</label><input class="inp" id="cl-key" placeholder="$2a$10$..."/>' +
+      '<label class="lbl">ID del bin de datos</label><input class="inp" id="cl-bid" placeholder="668abc123..."/>' +
+      '<button class="btn btn-pri full" id="btn-cl-restore">☁ Restaurar desde la nube</button>' +
+      '<div class="auth-footer"><button class="lnk" id="btn-tologin">← Volver al inicio de sesión</button></div>';
+  }
+  return '<div class="auth-bg"><div class="auth-card">' +
+    '<div class="auth-logo"><div class="auth-ico">📋</div><div class="auth-title">Gestor de Asistencia</div><div class="auth-sub">Sistema docente · Versión 3.0</div></div>' +
+    tabs + inner + '</div></div>';
+}
+
+function bindAuth() {
+  function on(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
+  function val(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+  function enter(ids, btnId) {
+    ids.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('keydown', function(e) { if (e.key === 'Enter') { var b = document.getElementById(btnId); if (b) b.click(); } });
+    });
+  }
+  document.querySelectorAll('[data-atab]').forEach(function(b) {
+    b.addEventListener('click', function() { S.atab = b.dataset.atab; S.aerr = ''; S.amsg = ''; S.rcode = ''; render(); });
+  });
+  on('btn-login', function() {
+    var u = val('l-u').trim(), p = val('l-p');
+    if (!u || !p) { S.aerr = 'Completá todos los campos.'; render(); return; }
+    var r = doLogin(u, p);
+    if (!r.ok) { S.aerr = r.msg; render(); return; }
+    initApp();
+  });
+  on('btn-toforgot', function() { S.atab = 'forgot'; S.aerr = ''; S.amsg = ''; S.rStep = 1; render(); });
+  on('btn-tologin', function() { S.atab = 'login'; S.aerr = ''; S.amsg = ''; render(); });
+  on('btn-tocloud', function() { S.atab = 'cloud'; S.aerr = ''; S.amsg = ''; render(); });
+  on('btn-reg', function() {
+    var SQS = ['¿Nombre de tu primera mascota?','¿Ciudad donde naciste?','¿Nombre de tu escuela primaria?','¿Color favorito de la infancia?','¿Apellido materno de tu madre?'];
+    var u = val('r-u').trim(), p = val('r-p'), p2 = val('r-p2'), sqIdx = val('r-sq'), sa = val('r-sa').trim();
+    if (!u || !p || !p2 || !sa) { S.aerr = 'Completá todos los campos.'; render(); return; }
+    if (p !== p2) { S.aerr = 'Las contraseñas no coinciden.'; render(); return; }
+    var r = doRegister(u, p, SQS[parseInt(sqIdx) || 0], sa);
+    if (!r.ok) { S.aerr = r.msg; render(); return; }
+    S.rcode = r.code; render();
+  });
+  on('btn-enterapp', function() { S.rcode = ''; initApp(); });
+  on('btn-fnext', function() {
+    var u = val('f-u').trim(), mt = val('f-mt') || 'code';
+    if (!u) { S.aerr = 'Ingresá tu usuario.'; render(); return; }
+    var found = getUsers().find(function(x) { return x.uname.toLowerCase() === u.toLowerCase(); });
+    if (!found) { S.aerr = 'Usuario no encontrado.'; render(); return; }
+    S.rUser = u; S.rMethod = mt; S.rStep = 2; S.aerr = ''; render();
+    if (mt === 'sec') {
+      var el = document.getElementById('f-v');
+      if (el) el.placeholder = found.secQ || 'Tu respuesta';
+    }
+  });
+  on('btn-freset', function() {
+    var v = val('f-v').trim(), np = val('f-np');
+    if (!v || !np) { S.aerr = 'Completá todos los campos.'; render(); return; }
+    var r = doRecover(S.rUser, S.rMethod, v, np);
+    if (!r.ok) { S.aerr = r.msg; render(); return; }
+    S.atab = 'login'; S.rStep = 1; S.aerr = ''; S.amsg = 'Contraseña restablecida. Ya podés iniciar sesión.'; render();
+  });
+  on('btn-cl-restore', function() {
+    var key = val('cl-key').trim(), bid = val('cl-bid').trim();
+    if (!key || !bid) { S.aerr = 'Completá ambos campos.'; render(); return; }
+    S.aerr = ''; S.amsg = 'Conectando...'; render();
+    CL.key = key; CL.binId = bid;
+    CL.doPull(function(data) {
+      if (!data || !data.courses) { S.amsg = ''; S.aerr = 'No se pudo conectar o el bin no contiene datos válidos.'; render(); return; }
+      var allC = DB.get('courses') || [];
+      data.courses.forEach(function(c) {
+        var idx = allC.findIndex(function(x) { return x.id === c.id; });
+        if (idx >= 0) allC[idx] = c; else allC.push(c);
+      });
+      DB.set('courses', allC);
+      Object.keys(data.sessions || {}).forEach(function(cid) { DB.set('sess_' + cid, data.sessions[cid]); });
+      var users = getUsers();
+      var u = users.find(function(x) { return x.uname === data.uname; });
+      if (!u) {
+        var code = genCode();
+        u = { id: data.uid || genId(), uname: data.uname, ph: '?', secQ: 'Código de restauración', secA: norm(code), rc: code, created: TODAY };
+        users.push(u); saveUsers(users);
+        DB.set('cloud', { key: key, binId: bid });
+        S.amsg = ''; S.atab = 'login';
+        S.aerr = 'Datos restaurados. Usuario: "' + data.uname + '". En este dispositivo nuevo, restablecé tu contraseña con el código: ' + code;
+        render(); return;
+      }
+      DB.set('sess', u.id);
+      DB.set('cloud', { key: key, binId: bid });
+      initApp();
+    });
+  });
+  // pw-eye toggles (auth)
+  document.querySelectorAll('[data-pw]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var inp = document.getElementById(btn.dataset.pw);
+      if (!inp) return;
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+    });
+  });
+  enter(['l-u','l-p'], 'btn-login');
+  enter(['r-u','r-p','r-p2','r-sa'], 'btn-reg');
+}
+
+// ===== APP LAYOUT =====
+function getCourse() {
+  return S.courses.find(function(c) { return c.id === S.selC; }) || null;
+}
+function buildLayout() {
+  var view = (S.selC && S.view === 'crs') ? 'crs' : 'home';
+  return '<div class="layout ' + view + '">' +
+    '<div class="sdb">' + buildSidebar() + '</div>' +
+    '<div class="main">' + buildMain() + '</div>' +
+    '</div>';
+}
+
+// ===== SIDEBAR =====
+function buildSidebar() {
+  var courses = S.courses, selC = S.selC, delCo = S.delCo;
+  var user = getCurrentUser();
+  var atLimit = courses.length >= MAX_COURSES;
+  var uname = user ? user.uname : '';
+  var h = '<div class="sb-hdr">' +
+    '<div class="sb-brand">' +
+    '<span style="font-size:22px">📋</span>' +
+    '<div><div class="sb-title">Gestor de Asistencia</div><div class="sb-ver">Sistema docente v3.0</div></div>' +
+    '</div>' +
+    '<div class="sb-user-row">' +
+    '<span class="sb-user">👤 ' + esc(uname) + ' <button class="lnk" id="btn-logout" style="font-size:11px;color:rgba(255,255,255,.6)">Salir</button></span>' +
+    '<span class="sync-badge sync-off" id="sync-badge">☁ Sin nube</span>' +
+    '</div>' +
+    '</div>' +
+    '<div class="sb-acts">' +
+    '<button class="sb-act" id="btn-nc"' + (atLimit ? ' disabled' : '') + '>+ Nuevo</button>' +
+    '<button class="sb-act" id="btn-cloud-cfg">☁ Nube</button>' +
+    '<button class="sb-act" id="btn-data-cfg">↕ Datos</button>' +
+    '</div>';
+  if (atLimit) {
+    h += '<div class="sb-warn">⚠ Límite de ' + MAX_COURSES + ' espacios alcanzado.</div>';
+  } else if (courses.length >= MAX_COURSES - 2) {
+    h += '<div class="sb-warn" style="background:rgba(230,126,34,.1);border-color:rgba(230,126,34,.3);color:#fac08a">Quedan ' + (MAX_COURSES - courses.length) + ' espacio(s) disponible(s).</div>';
+  }
+  h += '<div class="sb-section">Espacios (' + courses.length + '/' + MAX_COURSES + ')</div>';
+  h += '<div class="sb-list">';
+  if (!courses.length) {
+    h += '<div class="sb-empty"><div class="sb-empty-ico">📚</div><div class="sb-empty-ttl">Sin espacios</div><div class="sb-empty-sub">Tocá "+ Nuevo" para crear tu primer espacio curricular</div></div>';
+  } else {
+    courses.forEach(function(c) {
+      var isSel = c.id === selC;
+      var last = lastSessionDate(c.id);
+      var sess = DB.get('sess_' + c.id) || {};
+      var nd = Object.keys(sess).length;
+      var sts = (c.students || []).length;
+      var isConf = delCo === c.id;
+      h += '<div class="cc' + (isSel ? ' active' : '') + '">' +
+        '<div class="cc-body" data-copen="' + c.id + '">' +
+        '<div class="cc-name">' + esc(c.name) + '</div>' +
+        '<div class="cc-meta">' + esc([c.inst, c.teacher].filter(Boolean).join(' · ') || 'Sin institución') + '</div>' +
+        '<div class="cc-chips">' +
+        '<span class="chip chip-b">' + sts + '/100</span>' +
+        (c.year ? '<span class="chip chip-d">' + esc(c.year) + '</span>' : '') +
+        (nd ? '<span class="chip chip-d">' + nd + ' día' + (nd !== 1 ? 's' : '') + '</span>' : '') +
+        '</div></div>' +
+        '<div class="cc-btns">' +
+        (isConf
+          ? '<button class="ccbtn del" data-dcyes="' + c.id + '">Confirmar</button><button class="ccbtn" data-dcno>No</button>'
+          : '<button class="ccbtn" data-edc="' + c.id + '">✏️</button><button class="ccbtn del" data-dc="' + c.id + '">🗑️</button>') +
+        '</div></div>';
+    });
+  }
+  h += '</div>';
+  return h;
+}
+
+// ===== MAIN AREA =====
+function buildMain() {
+  var c = getCourse();
+  if (!c) {
+    return '<div class="main-empty">' +
+      '<div style="font-size:52px;margin-bottom:14px">📋</div>' +
+      '<div style="font-size:19px;font-weight:800;color:var(--tx);margin-bottom:8px">Gestor de Asistencia Docente</div>' +
+      '<div style="font-size:13px;line-height:1.7;max-width:300px">Seleccioná un espacio curricular o creá uno nuevo con "+ Nuevo"</div>' +
+      '</div>';
+  }
+  var tab = S.tab;
+  var sessions = getSessions(c.id);
+  var sortedDates = Object.keys(sessions).sort().reverse();
+  var tc = '';
+  if (tab === 'asistencia') tc = buildAttTab(c, sessions);
+  else if (tab === 'estadisticas') tc = buildStatsTab(c, sessions, sortedDates);
+  else if (tab === 'tablero') tc = buildTablero(c, sessions, sortedDates);
+  else if (tab === 'alumnos') tc = buildStudentsTab(c);
+  else if (tab === 'reportes') tc = buildReportsTab(c, sessions, sortedDates);
+  var meta = [c.inst, c.teacher, c.year].filter(Boolean).join(' · ');
+  return '<div class="mhdr">' +
+    '<button class="btnback" id="btn-back">← Volver</button>' +
+    '<div class="m-name">' + esc(c.name) + '</div>' +
+    (meta ? '<div class="m-meta">' + esc(meta) + '</div>' : '') +
+    '</div>' +
+    '<div class="tabbar">' +
+    [['asistencia','📋','Asistencia'],['estadisticas','📊','Estadísticas'],['tablero','🗓','Tablero'],['alumnos','👥','Alumnos'],['reportes','📄','Reportes']].map(function(t) {
+      return '<button class="tabbtn' + (tab === t[0] ? ' on' : '') + '" data-tab="' + t[0] + '"><span class="tabbtn-ico">' + t[1] + '</span>' + t[2] + '</button>';
+    }).join('') +
+    '</div>' +
+    '<div class="tc">' + tc + '</div>';
+}
+
+// ===== ATTENDANCE TAB =====
+function buildAttTab(c, sessions) {
+  var selDate = S.selDate, search = S.search;
+  var students = sortStudents(c.students || []);
+  var cur = sessions[selDate] || {};
+  var mc = students.filter(function(s) {
+    var a = cur[s.id];
+    return a && (a.h1 !== null || a.h2 !== null);
+  }).length;
+  var allDone = mc === students.length && students.length > 0;
+  var q = norm(search);
+  var filt = q ? students.filter(function(s) {
+    return norm(s.apellido + ' ' + s.nombre + ' ' + (s.dni || '')).indexOf(q) >= 0;
+  }) : students;
+  var h = '<div class="att-top">' +
+    '<div style="flex:1"><span class="att-lbl">Fecha de clase</span>' +
+    '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
+    '<input type="date" class="date-inp" id="date-inp" value="' + selDate + '"/>' +
+    '<span class="day-badge">' + dayName(selDate) + '</span>' +
+    '</div></div>' +
+    '<div class="cnt-block">' +
+    '<span class="att-lbl" style="display:block;text-align:center">Registros</span>' +
+    '<div class="cnt-val' + (allDone ? ' cnt-done' : '') + '">' + mc + '/' + students.length + '</div>' +
+    (allDone ? '<div class="done-badge">✓ Completo</div>' : '') +
+    '</div></div>' +
+    '<div class="srch-wrap">' +
+    '<input class="srch" id="srch" type="text" placeholder="🔍 Buscar por apellido, nombre o DNI..." value="' + esc(search) + '" autocomplete="off" spellcheck="false"/>' +
+    (search ? '<button class="btn btn-ghost btn-sm" id="btn-clrsrch">✕</button>' : '') +
+    '</div>' +
+    '<div class="qrow">' +
+    '<div class="qbox"><div class="qlbl">Hora 1 — todos</div><div class="qbtns"><button class="qb qb-p" data-qh="h1" data-qv="P">✓ Presentes</button><button class="qb qb-a" data-qh="h1" data-qv="A">✗ Ausentes</button></div></div>' +
+    '<div class="qbox"><div class="qlbl">Hora 2 — todos</div><div class="qbtns"><button class="qb qb-p" data-qh="h2" data-qv="P">✓ Presentes</button><button class="qb qb-a" data-qh="h2" data-qv="A">✗ Ausentes</button></div></div>' +
+    '</div>' +
+    buildSortBar() +
+    '<div class="chdr"><div class="chn">#</div><div class="chnm">Apellido y Nombre</div><div class="chh">H1</div><div class="chh">H2</div></div>' +
+    '<div class="slist">';
+  if (!students.length) {
+    h += '<div class="mempty">Sin alumnos. Ir a la pestaña <b>Alumnos</b> para agregar.</div>';
+  } else if (!filt.length) {
+    h += '<div class="mempty">Sin resultados para "<b>' + esc(search) + '</b>". Borrá el filtro o revisá la ortografía.</div>';
+  } else {
+    filt.forEach(function(s) {
+      var h1 = getAtt(sessions, s.id, 'h1', selDate);
+      var h2 = getAtt(sessions, s.id, 'h2', selDate);
+      var bc = (h1==='P'&&h2==='P') ? 'var(--ok2)' : (h1==='A'||h2==='A') ? 'var(--red)' : 'var(--bdr)';
+      var idx = students.indexOf(s);
+      h += '<div class="srow" style="border-left-color:' + bc + '">' +
+        '<div class="snum">' + (idx + 1) + '</div>' +
+        '<div class="sinf">' +
+        '<div class="sap">' + esc(s.apellido) + ', ' + esc(s.nombre) + '</div>' +
+        (s.dni ? '<div class="snm">DNI: ' + esc(s.dni) + '</div>' : '') +
+        '</div>' +
+        '<button class="abtn abtn-' + (h1||'N') + '" data-sid="' + s.id + '" data-h="h1">' + (h1||'·') + '</button>' +
+        '<button class="abtn abtn-' + (h2||'N') + '" data-sid="' + s.id + '" data-h="h2">' + (h2||'·') + '</button>' +
+        '</div>';
+    });
+  }
+  h += '</div><div class="lgnd">' +
+    '<span>Toque para marcar:</span>' +
+    '<span><span class="ld" style="background:var(--ok2)">P</span> Presente</span>' +
+    '<span><span class="ld" style="background:var(--red)">A</span> Ausente</span>' +
+    '<span><span class="ld" style="background:var(--t3)">·</span> Limpiar</span>' +
+    '</div>';
+  return h;
+}
+
+// ===== STATS TAB =====
+function buildStatsTab(c, sessions, sortedDates) {
+  var tn = Object.keys(sessions).length, tc2 = tn * 2;
+  var stats = calcStats(sortStudents(c.students || []), sessions);
+  var h = '<div class="hero">' +
+    '<div class="hero-lbl">' + esc(c.name) + '</div>' +
+    '<div class="hero-grid">' +
+    '<div class="hero-it"><div class="hero-num">' + tc2 + '</div><div class="hero-sub">Clases dictadas</div></div>' +
+    '<div class="hero-it"><div class="hero-num">' + tn + '</div><div class="hero-sub">Días</div></div>' +
+    '<div class="hero-it"><div class="hero-num">' + (c.students || []).length + '</div><div class="hero-sub">Alumnos/as</div></div>' +
+    '</div></div>' +
+    '<div class="ri"><span>ℹ️</span><span><b style="color:var(--tx)">Regularidad:</b> <span style="color:var(--ok2)">● ≥75%</span> Regular · <span style="color:var(--warn)">● 50–74%</span> En riesgo · <span style="color:var(--red)">● &lt;50%</span> Irregular</span></div>';
+  if (!stats.length) {
+    h += '<div class="mempty">Sin alumnos registrados.</div>';
+  } else {
+    stats.forEach(function(s) {
+      var col = pctColor(s.pct);
+      var isExp = S.expSt === s.id;
+      var pctTxt = s.pct !== null ? s.pct + '%' : '—';
+      h += '<div class="stc">' +
+        '<div class="str" data-exp="' + s.id + '">' +
+        '<div class="stnm">' + esc(s.apellido) + ', ' + esc(s.nombre) + '</div>' +
+        '<div class="stnums">' +
+        '<div class="si"><div class="sl">PRES</div><div class="sv sv-ok">' + s.p + '</div></div>' +
+        '<div class="si"><div class="sl">AUS</div><div class="sv sv-no">' + s.a + '</div></div>' +
+        '<div class="pctb" style="background:' + col + '">' + pctTxt + '</div>' +
+        '<div class="chev' + (isExp ? ' chev-open' : '') + '">▾</div>' +
+        '</div></div>' +
+        '<div class="pb"><div class="pf" style="width:' + (s.pct || 0) + '%;background:' + col + '"></div></div>' +
+        (isExp ? buildHistPanel(s, sessions, sortedDates) : '') +
+        '</div>';
+    });
+  }
+  return h;
+}
+function buildHistPanel(s, sessions, sortedDates) {
+  var h = '<div class="histp"><div class="histl">Historial · ' + s.total + ' horas dictadas</div>';
+  if (!sortedDates.length) {
+    h += '<div style="font-size:12px;color:var(--t2)">Sin clases registradas.</div>';
+  } else {
+    sortedDates.forEach(function(d) {
+      var at = (sessions[d] || {})[s.id] || { h1: null, h2: null };
+      h += '<div class="hrow"><div class="hdt">' + dayName(d) + ' ' + fmtDate(d) + '</div><div class="hcells">';
+      ['h1','h2'].forEach(function(hr) {
+        var v = at[hr];
+        var bg = v==='P' ? 'var(--ok2)' : v==='A' ? 'var(--red)' : 'var(--sfc2)';
+        var fc = v ? '#fff' : 'var(--t3)';
+        h += '<span class="hcell" style="background:' + bg + ';color:' + fc + '">' + (v || '·') + '</span>';
+      });
+      h += '</div></div>';
+    });
+  }
+  h += '</div>';
+  return h;
+}
+
+// ===== TABLERO =====
+function buildTablero(c, sessions, sortedDates) {
+  var students = sortStudents(c.students || []);
+  var allDates = Object.keys(sessions).sort();
+  if (!students.length) return '<div class="empt"><div class="empt-ico">📊</div><div class="empt-ttl">Sin alumnos</div><div class="empt-sub">Agregá alumnos para ver el tablero.</div></div>';
+  if (!allDates.length) return '<div class="empt"><div class="empt-ico">🗓</div><div class="empt-ttl">Sin clases registradas</div><div class="empt-sub">Tomá asistencia primero.</div></div>';
+  var stats = calcStats(students, sessions);
+  var sm = {};
+  stats.forEach(function(s) { sm[s.id] = s; });
+  var h = '<div style="padding:8px 10px 4px;font-size:12px;color:var(--t2)">Clases: <b style="color:var(--tx)">' + allDates.length*2 + '</b> · Días: <b style="color:var(--tx)">' + allDates.length + '</b> · Alumnos: <b style="color:var(--tx)">' + students.length + '</b></div>';
+  h += '<div class="tbl-wrap"><table class="tbl"><thead><tr><th class="stky" rowspan="2">Apellido y Nombre</th>';
+  allDates.forEach(function(d) { h += '<th colspan="2">' + dayName(d) + '<br>' + fmtDateS(d) + '</th>'; });
+  h += '<th colspan="2" style="background:#0d2444">Totales</th><th style="background:#0d2444">%</th></tr><tr>';
+  allDates.forEach(function() { h += '<th>H1</th><th>H2</th>'; });
+  h += '<th>P</th><th>A</th><th></th></tr></thead><tbody>';
+  students.forEach(function(s) {
+    var ss = sm[s.id];
+    var pc = pctColor(ss.pct);
+    h += '<tr><td class="stky">' + esc(s.apellido) + ', ' + esc(s.nombre) + '</td>';
+    allDates.forEach(function(d) {
+      var at = (sessions[d] || {})[s.id] || { h1: null, h2: null };
+      ['h1','h2'].forEach(function(hr) {
+        var v = at[hr];
+        h += '<td class="' + (v==='P'?'cp':v==='A'?'ca':'cn') + '">' + (v||'·') + '</td>';
+      });
+    });
+    var pctTxt = ss.pct !== null ? ss.pct + '%' : '—';
+    h += '<td class="ctot">' + ss.p + '</td><td class="ctot">' + ss.a + '</td><td class="cpct" style="color:' + pc + '">' + pctTxt + '</td></tr>';
+  });
+  // Totals row presentes
+  h += '<tr class="tsum"><td class="stky" style="color:var(--ok2)">↑ Total presentes</td>';
+  allDates.forEach(function(d) {
+    var cur = sessions[d] || {};
+    ['h1','h2'].forEach(function(hr) {
+      var cnt = students.filter(function(s) { return ((cur[s.id]||{})[hr]) === 'P'; }).length;
+      h += '<td class="cp">' + cnt + '</td>';
+    });
+  });
+  h += '<td colspan="3"></td></tr>';
+  h += '<tr class="tsum"><td class="stky" style="color:var(--red)">↓ Total ausentes</td>';
+  allDates.forEach(function(d) {
+    var cur = sessions[d] || {};
+    ['h1','h2'].forEach(function(hr) {
+      var cnt = students.filter(function(s) { return ((cur[s.id]||{})[hr]) === 'A'; }).length;
+      h += '<td class="ca">' + cnt + '</td>';
+    });
+  });
+  h += '<td colspan="3"></td></tr>';
+  h += '</tbody></table></div>';
+  return h;
+}
+
+// ===== STUDENTS TAB =====
+function buildStudentsTab(c) {
+  var delSt = S.delSt;
+  var students = sortStudents(c.students || []);
+  var can = students.length < 100;
+  var h = '<div class="al-top">' +
+    '<button class="btn btn-sec btn-sm' + (can ? '' : ' btn-dis') + '" id="btn-as">＋ Agregar alumno/a</button>' +
+    '<button class="btn btn-ok btn-sm" id="btn-imp">📋 Importar lista</button>' +
+    '<span style="font-size:11px;color:var(--t2)">' + students.length + '/100</span>' +
+    '</div>';
+  h += buildSortBar();
+  if (!students.length) {
+    h += '<div class="empt"><div class="empt-ico">👥</div><div class="empt-ttl">Sin alumnos/as</div><div class="empt-sub">Agregá alumnos uno por uno o importá una lista. Se ordenan automáticamente por apellido.</div></div>';
+  } else {
+    h += '<div class="al-list">';
+    students.forEach(function(s, i) {
+      var isConf = delSt === s.id;
+      h += '<div class="ar">' +
+        '<div class="anum">' + (i + 1) + '</div>' +
+        '<div class="ainf">' +
+        '<div class="aap">' + esc(s.apellido) + ', ' + esc(s.nombre) + '</div>' +
+        (s.dni ? '<div class="adni">DNI: ' + esc(s.dni) + '</div>' : '') +
+        '</div>' +
+        '<div class="ar-acts">' +
+        (isConf
+          ? '<button class="btn btn-ghost btn-sm" data-dno="' + s.id + '">No</button><button class="btn btn-red btn-sm" data-dyes="' + s.id + '">Borrar</button>'
+          : '<button class="btn btn-ghost btn-sm" data-eds="' + s.id + '">✏️ Editar</button><button class="btn btn-red btn-sm" data-del="' + s.id + '">🗑️</button>') +
+        '</div></div>';
+    });
+    h += '</div>';
+  }
+  return h;
+}
+
+// ===== REPORTS TAB =====
+function buildReportsTab(c, sessions, sortedDates) {
+  var students = sortStudents(c.students || []);
+  var opts = students.map(function(s) {
+    return '<option value="' + s.id + '">' + esc(s.apellido) + ', ' + esc(s.nombre) + '</option>';
+  }).join('');
+  return '<div class="rep-pad">' +
+    '<div class="rep-card">' +
+    '<div class="rep-title">📊 Reporte completo del espacio</div>' +
+    '<div class="rep-sub">PDF con todos los alumnos, asistencia por día y hora, totales y porcentajes de asistencia.</div>' +
+    '<button class="btn btn-pri" id="btn-pdf-cls">⬇ Descargar PDF completo</button>' +
+    '</div>' +
+    '<div class="rep-card">' +
+    '<div class="rep-title">👤 Reporte por alumno/a</div>' +
+    '<div class="rep-sub">PDF individual con historial completo, estadísticas y detalle de inasistencias.</div>' +
+    '<select class="inp" id="rep-stu" style="margin-bottom:12px"><option value="">— Seleccionar alumno/a —</option>' + opts + '</select>' +
+    '<button class="btn btn-pri" id="btn-pdf-stu">⬇ PDF de este alumno/a</button>' +
+    '</div>' +
+    '<div class="rep-card">' +
+    '<div class="rep-title">📋 Nómina con DNI</div>' +
+    '<div class="rep-sub">Lista completa con apellido, nombre y DNI, con espacio para firma.</div>' +
+    '<button class="btn btn-ok" id="btn-pdf-dni">⬇ PDF nómina con DNI</button>' +
+    '</div>' +
+    '</div>';
+}
+
+// ===== MODALS =====
+function buildCFModal() {
+  var isEdit = !!S.editCI, cf = S.cf;
+  return '<div class="ovl" id="ovl"><div class="modal">' +
+    '<div class="modal-ttl">' + (isEdit ? '✏️ Editar' : '➕ Nuevo') + ' espacio curricular</div>' +
+    '<label class="lbl">Nombre del espacio *</label>' +
+    '<input class="inp" id="cf-n" placeholder="Ej: Historia Argentina y Latinoamericana" value="' + esc(cf.name) + '"/>' +
+    '<label class="lbl">Institución</label>' +
+    '<input class="inp" id="cf-i" placeholder="Ej: ISPI N° 4007 — Inmaculada Concepción" value="' + esc(cf.inst) + '"/>' +
+    '<label class="lbl">Docente</label>' +
+    '<input class="inp" id="cf-t" placeholder="Ej: Prof. Carlos Trusik" value="' + esc(cf.teacher) + '"/>' +
+    '<label class="lbl">Año / División / Carrera</label>' +
+    '<input class="inp" id="cf-y" placeholder="Ej: 3° C / 1° año Profesorado en Historia" value="' + esc(cf.year) + '"/>' +
+    '<div class="modal-btns"><button class="m-cancel" id="btn-ccnl">Cancelar</button><button class="m-save" id="btn-csav">💾 Guardar espacio</button></div>' +
+    '</div></div>';
+}
+
+function buildSFModal() {
+  var isEdit = !!S.editSI, sf = S.sf, mode = S.sfMode;
+  var fmtOpts = '<option value="ap_nm"' + (sf.fmt==='ap_nm'?' selected':'') + '>Apellido primero (González, María)</option>' +
+    '<option value="nm_ap"' + (sf.fmt==='nm_ap'?' selected':'') + '>Nombre primero (María González) → se invertirá</option>';
+  var preview = '';
+  if (mode === 'single' && sf.full.trim()) {
+    var parsed = parseName(sf.full, sf.fmt);
+    preview = parsed
+      ? '<div class="swap-hint">📝 Se guardará como: <b>' + esc(parsed.ap) + ', ' + esc(parsed.nm) + '</b><button class="btn btn-ghost btn-sm" id="btn-swap">⇄ Invertir</button></div>'
+      : '<div class="swap-hint" style="background:var(--rb);color:var(--red)">No se pudo interpretar el nombre. Usá una coma para separar.</div>';
+  }
+  var modeSelector = '<div style="display:flex;gap:6px;background:var(--sfc2);border-radius:var(--r8);padding:3px;margin-bottom:14px">' +
+    '<button class="tpill' + (mode==='fields'?' on':'') + '" id="sf-mode-f" style="flex:1">Campos separados</button>' +
+    '<button class="tpill' + (mode==='single'?' on':'') + '" id="sf-mode-s" style="flex:1">Nombre completo</button>' +
+    '</div>';
+  var fieldsHtml = mode === 'fields'
+    ? '<label class="lbl">Apellido/s *</label><input class="inp" id="sf-a" placeholder="Ej: González Pérez" value="' + esc(sf.ap) + '" autocomplete="off"/>' +
+      '<label class="lbl">Nombre/s *</label><input class="inp" id="sf-n" placeholder="Ej: María Claudia" value="' + esc(sf.nm) + '" autocomplete="off"/>'
+    : '<label class="lbl">Formato de entrada</label><select class="inp" id="sf-fmt" style="margin-bottom:8px">' + fmtOpts + '</select>' +
+      '<label class="lbl">Nombre completo *</label><input class="inp" id="sf-full" placeholder="Ej: González, María Claudia" value="' + esc(sf.full) + '" autocomplete="off"/>' +
+      preview;
+  return '<div class="ovl" id="ovl"><div class="modal">' +
+    '<div class="modal-ttl">' + (isEdit ? '✏️ Editar' : '➕ Agregar') + ' alumno/a</div>' +
+    modeSelector + fieldsHtml +
+    '<label class="lbl">DNI (opcional)</label>' +
+    '<input class="inp" id="sf-d" placeholder="Ej: 40123456" value="' + esc(sf.dni) + '" autocomplete="off"/>' +
+    '<div class="modal-btns"><button class="m-cancel" id="btn-scnl">Cancelar</button><button class="m-save" id="btn-ssav">💾 ' + (isEdit ? 'Guardar cambios' : 'Agregar alumno/a') + '</button></div>' +
+    '</div></div>';
+}
+
+function buildImpModal() {
+  var imp = S.imp;
+  var c = getCourse();
+  var libre = 100 - ((c ? c.students || [] : []).length);
+  return '<div class="ovl" id="ovl"><div class="modal">' +
+    '<div class="modal-ttl">📋 Importar lista de alumnos</div>' +
+    '<div class="imp-hint">Un alumno por línea. Formatos:<br>' +
+    '<b>Apellido, Nombre</b> → González, María Elena<br>' +
+    '<b>Apellido Nombre</b> (sin coma) → González María<br>' +
+    'Si el nombre viene primero, elegí "Nombre primero". Podés agregar hasta <b>' + libre + '</b> alumno/as más.<br>' +
+    'Los alumnos se ordenan automáticamente por apellido al importar.' +
+    '</div>' +
+    '<label class="lbl">Formato de los datos</label>' +
+    '<select class="inp" id="imp-fmt" style="margin-bottom:10px">' +
+    '<option value="ap_nm"' + (imp.fmt==='ap_nm'?' selected':'') + '>Apellido primero → González, María</option>' +
+    '<option value="nm_ap"' + (imp.fmt==='nm_ap'?' selected':'') + '>Nombre primero → María González (se invierte automáticamente)</option>' +
+    '</select>' +
+    '<label class="lbl">Lista de alumnos</label>' +
+    '<textarea class="ftxa" id="imp-txt" placeholder="Aguirre, Mayra Cristina&#10;Bazán, Milagros María&#10;Fernandez, Sofia Leonela">' + esc(imp.txt) + '</textarea>' +
+    '<div class="modal-btns"><button class="m-cancel" id="btn-icnl">Cancelar</button><button class="m-save" id="btn-isav">📋 Importar y ordenar</button></div>' +
+    '</div></div>';
+}
+
+function buildCloudModal() {
+  var cfg = DB.get('cloud') || {};
+  var isCfg = !!(cfg.key && cfg.binId);
+  return '<div class="ovl" id="ovl"><div class="modal">' +
+    '<div class="modal-ttl">☁ Sincronización en la nube</div>' +
+    '<div class="cl-card">' +
+    '<div class="cl-ttl">☁ JSONBin.io — Almacenamiento gratuito</div>' +
+    '<div class="cl-sub">Creá una cuenta gratuita en <b>jsonbin.io</b>, obtené tu Master Key y pegala abajo. La app sincroniza automáticamente cada cambio. Desde otro dispositivo, usá la misma clave y el ID del bin.</div>' +
+    (isCfg ? '<div class="cl-status cls-ok">✓ Nube configurada · Bin ID: ' + (cfg.binId || '').slice(0,8) + '...</div>' : '<div class="cl-status cls-off">Sin configurar</div>') +
+    '<label class="cl-lbl">Master Key (de jsonbin.io → API Keys)</label>' +
+    '<input class="cl-inp" id="cl-key" placeholder="$2a$10$..." value="' + esc(cfg.key || '') + '"/>' +
+    '<label class="cl-lbl">Bin ID (vacío para crear nuevo, o pegá el ID existente)</label>' +
+    '<input class="cl-inp" id="cl-bid" placeholder="Dejar vacío para crear nuevo bin automáticamente" value="' + esc(cfg.binId || '') + '"/>' +
+    '</div>' +
+    '<div class="modal-btns">' +
+    '<button class="m-cancel" id="btn-clcnl">Cancelar</button>' +
+    (isCfg ? '<button class="btn btn-red" id="btn-cl-dis" style="flex:1;border-radius:var(--r10)">Desactivar</button>' : '') +
+    '<button class="m-save" id="btn-clsav">☁ Conectar</button>' +
+    '</div></div></div>';
+}
+
+function buildDataModal() {
+  return '<div class="ovl" id="ovl"><div class="modal">' +
+    '<div class="modal-ttl">↕ Exportar / Importar datos</div>' +
+    '<p style="font-size:13px;color:var(--t2);margin-bottom:16px;line-height:1.6">Exportá tus datos como archivo de respaldo o importalos para transferir entre dispositivos.</p>' +
+    '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">' +
+    '<button class="btn btn-pri" id="btn-exp-do">⬇ Exportar datos (JSON)</button>' +
+    '<button class="btn btn-ok" id="btn-imp-do">⬆ Importar desde archivo JSON</button>' +
+    '</div>' +
+    '<div class="modal-btns"><button class="m-cancel" id="btn-data-cnl">Cerrar</button></div>' +
+    '</div></div>';
+}
+
+// ===== ACTIONS =====
+function toggleAtt(sid, hora) {
+  var cid = S.selC, d = S.selDate;
+  var sess = getSessions(cid);
+  if (!sess[d]) sess[d] = {};
+  if (!sess[d][sid]) sess[d][sid] = { h1: null, h2: null };
+  var cur = sess[d][sid][hora];
+  sess[d][sid][hora] = (cur === null) ? 'P' : (cur === 'P') ? 'A' : null;
+  saveSessions(cid, sess);
+  render();
+}
+function markAll(hora, val) {
+  var cid = S.selC, d = S.selDate, c = getCourse();
+  if (!c) return;
+  var sess = getSessions(cid);
+  if (!sess[d]) sess[d] = {};
+  (c.students || []).forEach(function(s) {
+    if (!sess[d][s.id]) sess[d][s.id] = { h1: null, h2: null };
+    sess[d][s.id][hora] = val;
+  });
+  saveSessions(cid, sess);
+  render();
+}
+function saveCourse() {
+  var cf = S.cf;
+  if (!cf.name.trim()) { toast('El nombre del espacio es obligatorio.', 'err'); return; }
+  var courses = getCourses();
+  if (S.editCI) {
+    courses = courses.map(function(c) {
+      return c.id === S.editCI ? Object.assign({}, c, { name: cf.name.trim(), inst: cf.inst.trim(), teacher: cf.teacher.trim(), year: cf.year.trim() }) : c;
+    });
+    toast('Espacio actualizado.', 'ok');
+  } else {
+    if (courses.length >= MAX_COURSES) { toast('Límite de ' + MAX_COURSES + ' espacios alcanzado.', 'err'); return; }
+    var nc = { id: genId(), uid: uid(), name: cf.name.trim(), inst: cf.inst.trim(), teacher: cf.teacher.trim(), year: cf.year.trim(), students: [] };
+    courses.push(nc);
+    S.selC = nc.id; S.view = 'crs'; S.tab = 'alumnos';
+    toast('Espacio creado. Agregá los alumnos.', 'ok');
+  }
+  saveCourses(courses);
+  S.courses = getCourses();
+  S.showCF = false; S.editCI = null; S.cf = { name:'', inst:'', teacher:'', year:'' };
+  render();
+}
+function saveStudent() {
+  var sf = S.sf, mode = S.sfMode;
+  var fap, fnm;
+  if (mode === 'single') {
+    var parsed = parseName(sf.full, sf.fmt);
+    if (!parsed) { toast('No se pudo interpretar el nombre. Usá una coma para separar apellido y nombre.', 'err'); return; }
+    fap = parsed.ap; fnm = parsed.nm;
+  } else {
+    fap = sf.ap.trim(); fnm = sf.nm.trim();
+    if (!fap || !fnm) { toast('Apellido y nombre son obligatorios.', 'err'); return; }
+    fap = cap1(fap); fnm = cap1(fnm);
+  }
+  var dni = (sf.dni || '').trim();
+  var courses = getCourses();
+  var idx = courses.findIndex(function(c) { return c.id === S.selC; });
+  if (idx < 0) return;
+  if (S.editSI !== null) {
+    courses[idx].students = (courses[idx].students || []).map(function(s) {
+      return s.id === S.editSI ? Object.assign({}, s, { apellido: fap, nombre: fnm, dni: dni }) : s;
+    });
+    toast('Alumno/a actualizado/a.', 'ok');
+  } else {
+    if ((courses[idx].students || []).length >= 100) { toast('Límite de 100 alumnos alcanzado.', 'err'); return; }
+    var sts = courses[idx].students || [];
+    var maxId = sts.length ? Math.max.apply(null, sts.map(function(s) { return s.id; })) : 0;
+    sts.push({ id: maxId + 1, apellido: fap, nombre: fnm, dni: dni });
+    courses[idx].students = sts;
+    toast(fap + ', ' + fnm + ' agregado/a.', 'ok');
+  }
+  saveCourses(courses);
+  S.courses = getCourses();
+  S.showSF = false; S.editSI = null; S.sf = { ap:'', nm:'', dni:'', fmt:'ap_nm', full:'' }; S.sfMode = 'fields';
+  render();
+}
+function doImport() {
+  var imp = S.imp;
+  var lines = imp.txt.split('\n');
+  var added = 0, skipped = 0;
+  var courses = getCourses();
+  var idx = courses.findIndex(function(c) { return c.id === S.selC; });
+  if (idx < 0) return;
+  var students = courses[idx].students || [];
+  lines.forEach(function(line) {
+    if (students.length >= 100) { skipped++; return; }
+    var parsed = parseName(line, imp.fmt);
+    if (!parsed) { if (line.trim()) skipped++; return; }
+    var maxId = students.length ? Math.max.apply(null, students.map(function(s) { return s.id; })) : 0;
+    students.push({ id: maxId + 1, apellido: parsed.ap, nombre: parsed.nm, dni: '' });
+    added++;
+  });
+  courses[idx].students = students;
+  saveCourses(courses);
+  S.courses = getCourses();
+  S.showImp = false; S.imp = { txt:'', fmt:'ap_nm' };
+  toast(added + ' alumno/as importados.' + (skipped ? ' ' + skipped + ' líneas omitidas.' : ''), added ? 'ok' : 'err');
+  render();
+}
+function deleteStudent(id) {
+  var courses = getCourses();
+  var idx = courses.findIndex(function(c) { return c.id === S.selC; });
+  if (idx < 0) return;
+  var s = (courses[idx].students || []).find(function(x) { return x.id === id; });
+  courses[idx].students = (courses[idx].students || []).filter(function(x) { return x.id !== id; });
+  var sess = getSessions(S.selC);
+  Object.keys(sess).forEach(function(d) { if (sess[d][id]) delete sess[d][id]; });
+  saveSessions(S.selC, sess);
+  saveCourses(courses);
+  S.courses = getCourses();
+  S.delSt = null;
+  toast((s ? s.apellido : 'Alumno/a') + ' eliminado/a.', 'info');
+  render();
+}
+function deleteCourse(id) {
+  var courses = getCourses();
+  var c = courses.find(function(x) { return x.id === id; });
+  courses = courses.filter(function(x) { return x.id !== id; });
+  DB.del('sess_' + id);
+  saveCourses(courses);
+  S.courses = getCourses();
+  if (S.selC === id) { S.selC = null; S.view = 'home'; }
+  S.delCo = null;
+  toast('Espacio "' + (c ? c.name : '') + '" eliminado.', 'info');
+  render();
+}
+function exportData() {
+  var u = getCurrentUser(), courses = getCourses(), sessions = {};
+  courses.forEach(function(c) { sessions[c.id] = DB.get('sess_' + c.id) || {}; });
+  var data = { v: 3, exportDate: TODAY, uid: u ? u.id : null, uname: u ? u.uname : null, courses: courses, sessions: sessions };
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+  a.download = 'asistencia_' + (u ? u.uname : 'datos') + '_' + TODAY + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Datos exportados.', 'ok');
+}
+function importData() {
+  var inp = document.createElement('input');
+  inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = function(e) {
+    var file = e.target.files[0]; if (!file) return;
+    var r = new FileReader();
+    r.onload = function(ev) {
+      try {
+        var data = JSON.parse(ev.target.result);
+        if (!data.courses) throw new Error('Archivo inválido.');
+        if (!confirm('Importar ' + data.courses.length + ' espacios de "' + (data.uname || 'usuario') + '"? Los datos existentes con el mismo ID se actualizarán.')) return;
+        var all = DB.get('courses') || [];
+        var myId = uid();
+        data.courses.forEach(function(ic) {
+          var merged = Object.assign({}, ic, { uid: myId });
+          var i = all.findIndex(function(x) { return x.id === ic.id; });
+          if (i >= 0) all[i] = merged; else all.push(merged);
+        });
+        DB.set('courses', all);
+        Object.keys(data.sessions || {}).forEach(function(cid) { DB.set('sess_' + cid, data.sessions[cid]); });
+        S.courses = getCourses();
+        toast(data.courses.length + ' espacios importados.', 'ok');
+        render();
+      } catch(err) { toast('Error al leer el archivo: ' + err.message, 'err'); }
+    };
+    r.readAsText(file);
+  };
+  inp.click();
+}
+
+// ===== PDF =====
+function getPDF() {
+  if (window.jspdf && window.jspdf.jsPDF) return window.jspdf.jsPDF;
+  if (window.jsPDF) return window.jsPDF;
+  return null;
+}
+function pdfCheck() {
+  if (!getPDF()) { toast('Librería PDF no cargada. Conectate a internet e intentá de nuevo.', 'err'); return false; }
+  return true;
+}
+function generateClassPDF(c) {
+  if (!pdfCheck()) return;
+  var jsPDF = getPDF();
+  var doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  var sessions = getSessions(c.id);
+  var students = sortStudents(c.students || []);
+  var allDates = Object.keys(sessions).sort();
+  var stats = calcStats(students, sessions);
+  doc.setFontSize(15); doc.setTextColor(23, 55, 94);
+  doc.text('PLANILLA DE ASISTENCIA', 15, 16);
+  doc.setFontSize(9); doc.setTextColor(80, 80, 80);
+  doc.text(c.name, 15, 22);
+  var m = [c.inst, c.teacher, c.year].filter(Boolean).join(' · ');
+  if (m) doc.text(m, 15, 27);
+  doc.text('Clases: ' + allDates.length*2 + ' | Días: ' + allDates.length + ' | Alumnos: ' + students.length + ' | Generado: ' + fmtDate(TODAY), 15, 32);
+  doc.setDrawColor(23, 55, 94); doc.setLineWidth(0.4); doc.line(15, 35, 280, 35);
+  var head = [['#','Apellido y Nombre','DNI']];
+  allDates.forEach(function(d) { head[0].push(dayName(d)+'\n'+fmtDateS(d)+'\nH1','\n\nH2'); });
+  head[0].push('P','A','%');
+  var body = stats.map(function(s, i) {
+    var row = [i+1, s.apellido+', '+s.nombre, s.dni||'—'];
+    allDates.forEach(function(d) {
+      var at = (sessions[d]||{})[s.id] || {};
+      row.push(at.h1||'·', at.h2||'·');
+    });
+    row.push(s.p, s.a, s.pct !== null ? s.pct+'%' : '—');
+    return row;
+  });
+  doc.autoTable({
+    startY: 38, head: head, body: body, theme: 'striped',
+    headStyles: { fillColor: [23,55,94], fontSize: 6.5, halign: 'center', cellPadding: 2 },
+    bodyStyles: { fontSize: 7.5, cellPadding: 2 },
+    columnStyles: { 0: { halign:'center', cellWidth:7 }, 1: { cellWidth:42 }, 2: { cellWidth:20, halign:'center' } },
+    didParseCell: function(d) {
+      if (d.section === 'body') {
+        if (d.cell.raw === 'P') d.cell.styles.fillColor = [213,245,227];
+        else if (d.cell.raw === 'A') d.cell.styles.fillColor = [253,232,232];
+      }
+    }
+  });
+  doc.save('asistencia_' + c.name.replace(/[^a-zA-Z0-9]/g,'_') + '_' + TODAY + '.pdf');
+  toast('PDF generado.', 'ok');
+}
+function generateStudentPDF(c, sid) {
+  if (!pdfCheck()) return;
+  var jsPDF = getPDF();
+  var sessions = getSessions(c.id);
+  var sFound = (c.students||[]).find(function(x) { return x.id == sid; });
+  if (!sFound) { toast('Alumno no encontrado.', 'err'); return; }
+  var allDates = Object.keys(sessions).sort();
+  var st = calcStats([sFound], sessions)[0];
+  var doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  doc.setFontSize(15); doc.setTextColor(23,55,94);
+  doc.text('REPORTE INDIVIDUAL DE ASISTENCIA', 15, 16);
+  doc.setFontSize(10); doc.setTextColor(60,60,60);
+  doc.text('Alumno/a: ' + sFound.apellido + ', ' + sFound.nombre, 15, 24);
+  var y0 = 24;
+  if (sFound.dni) { doc.text('DNI: ' + sFound.dni, 15, 30); y0 = 30; }
+  doc.text('Espacio: ' + c.name, 15, y0 + 6);
+  var m = [c.inst,c.teacher,c.year].filter(Boolean).join(' · ');
+  if (m) doc.text(m, 15, y0 + 12);
+  doc.text('Generado: ' + fmtDate(TODAY), 15, y0 + 18);
+  var ly = y0 + 21;
+  doc.setDrawColor(23,55,94); doc.setLineWidth(0.4); doc.line(15, ly, 195, ly);
+  var sy = ly + 6;
+  var boxes = [['Horas dictadas',''+st.total,'#e4f0fb'],['Presencias',''+st.p,'#d5f5e3'],['Inasistencias',''+st.a,'#fde8e8'],['% Asistencia',st.pct!==null?st.pct+'%':'—',st.pct>=75?'#d5f5e3':st.pct>=50?'#fef5e4':'#fde8e8']];
+  boxes.forEach(function(b, i) {
+    var x = 15 + i * 46;
+    var rgb = parseInt(b[2].slice(1), 16);
+    doc.setFillColor((rgb>>16)&255,(rgb>>8)&255,rgb&255);
+    doc.roundedRect(x, sy, 43, 14, 2, 2, 'F');
+    doc.setFontSize(7.5); doc.setTextColor(80,80,80); doc.text(b[0], x+21.5, sy+5, {align:'center'});
+    doc.setFontSize(15); doc.setTextColor(23,55,94); doc.text(b[1], x+21.5, sy+12, {align:'center'});
+  });
+  var absDates = allDates.filter(function(d) { var at=(sessions[d]||{})[sFound.id]||{}; return at.h1==='A'||at.h2==='A'; });
+  var body = allDates.map(function(d) {
+    var at = (sessions[d]||{})[sFound.id] || { h1:null, h2:null };
+    var p = (at.h1==='P'?1:0)+(at.h2==='P'?1:0);
+    return [fmtDate(d), dayName(d), at.h1||'·', at.h2||'·', p===2?'Presente (2 hrs)':p===1?'Presente (1 hr)':'Ausente'];
+  });
+  doc.autoTable({
+    startY: sy + 18,
+    head: [['Fecha','Día','H1','H2','Estado']], body: body, theme: 'striped',
+    headStyles: { fillColor: [23,55,94], fontSize: 9 }, bodyStyles: { fontSize: 9 },
+    columnStyles: { 0:{cellWidth:28},1:{cellWidth:18,halign:'center'},2:{cellWidth:14,halign:'center'},3:{cellWidth:14,halign:'center'},4:{cellWidth:70} },
+    didParseCell: function(d) {
+      if (d.section==='body') {
+        if (d.cell.raw==='P') d.cell.styles.fillColor=[213,245,227];
+        else if (d.cell.raw==='A') d.cell.styles.fillColor=[253,232,232];
+        if (d.column.index===4) {
+          if (d.cell.raw==='Ausente') d.cell.styles.textColor=[176,58,46];
+          else d.cell.styles.textColor=[30,126,74];
+        }
+      }
+    }
+  });
+  if (absDates.length) {
+    var fy = doc.lastAutoTable.finalY + 8;
+    doc.setFontSize(11); doc.setTextColor(176,58,46); doc.text('Detalle de inasistencias:', 15, fy);
+    doc.setFontSize(9); doc.setTextColor(80,80,80);
+    absDates.forEach(function(d, i) {
+      var at=(sessions[d]||{})[sFound.id]||{}; var hrs=[];
+      if (at.h1==='A') hrs.push('Hora 1'); if (at.h2==='A') hrs.push('Hora 2');
+      doc.text('• ' + dayName(d) + ' ' + fmtDate(d) + ' — ' + hrs.join(', '), 20, fy+6+i*6);
+    });
+  }
+  doc.save(('asistencia_'+sFound.apellido+'_'+sFound.nombre+'_'+TODAY).replace(/[^a-zA-Z0-9_]/g,'_')+'.pdf');
+  toast('PDF generado.', 'ok');
+}
+function generateRosterPDF(c) {
+  if (!pdfCheck()) return;
+  var jsPDF = getPDF();
+  var doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  var students = sortStudents(c.students || []);
+  doc.setFontSize(15); doc.setTextColor(23,55,94);
+  doc.text('NÓMINA DE ALUMNOS', 15, 16);
+  doc.setFontSize(9); doc.setTextColor(80,80,80);
+  doc.text(c.name, 15, 22);
+  var m = [c.inst,c.teacher,c.year].filter(Boolean).join(' · ');
+  if (m) doc.text(m, 15, 27);
+  doc.text('Total: ' + students.length + ' alumnos/as · Generado: ' + fmtDate(TODAY), 15, 32);
+  doc.setDrawColor(23,55,94); doc.setLineWidth(0.4); doc.line(15, 35, 195, 35);
+  doc.autoTable({
+    startY: 39,
+    head: [['N°','Apellido y Nombre','DNI','Firma']],
+    body: students.map(function(s, i) { return [i+1, s.apellido+', '+s.nombre, s.dni||'—', '']; }),
+    theme: 'striped',
+    headStyles: { fillColor: [23,55,94], fontSize: 10 },
+    bodyStyles: { fontSize: 10, minCellHeight: 10 },
+    columnStyles: { 0:{cellWidth:12,halign:'center'}, 1:{cellWidth:95}, 2:{cellWidth:32,halign:'center'}, 3:{cellWidth:45} }
+  });
+  doc.save(('nomina_'+c.name).replace(/[^a-zA-Z0-9]/g,'_')+'_'+TODAY+'.pdf');
+  toast('PDF nómina generado.', 'ok');
+}
+
+// ===== EVENT BINDING =====
+function bindApp() {
+  function on(id, fn) { var el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
+  function onall(sel, fn) { document.querySelectorAll(sel).forEach(function(el) { el.addEventListener('click', fn); }); }
+  function val(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+  function enterKey(ids, btnId) {
+    ids.forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.addEventListener('keydown', function(e) { if (e.key === 'Enter') { var b = document.getElementById(btnId); if (b) b.click(); } });
+    });
+  }
+
+  on('btn-logout', function() {
+    if (confirm('¿Cerrar sesión?')) { doLogout(); S.scr = 'auth'; S.atab = 'login'; S.aerr = ''; render(); }
+  });
+  on('btn-nc', function() { S.showCF = true; S.editCI = null; S.cf = { name:'', inst:'', teacher:'', year:'' }; render(); });
+  on('btn-back', function() { S.view = 'home'; render(); });
+  on('btn-cloud-cfg', function() { S.showCloud = true; render(); });
+  on('btn-data-cfg', function() { S.showData = true; render(); });
+
+  onall('[data-copen]', function(e) {
+    var id = e.currentTarget.dataset.copen;
+    S.selC = id; S.view = 'crs'; S.tab = 'asistencia'; S.search = ''; render();
+  });
+  onall('[data-edc]', function(e) {
+    e.stopPropagation();
+    var id = e.currentTarget.dataset.edc;
+    var c = S.courses.find(function(x) { return x.id === id; });
+    if (!c) return;
+    S.editCI = id; S.showCF = true;
+    S.cf = { name: c.name, inst: c.inst||'', teacher: c.teacher||'', year: c.year||'' };
+    render();
+  });
+  onall('[data-dc]', function(e) { e.stopPropagation(); S.delCo = e.currentTarget.dataset.dc; render(); });
+  onall('[data-dcyes]', function(e) { e.stopPropagation(); deleteCourse(e.currentTarget.dataset.dcyes); });
+  onall('[data-dcno]', function(e) { e.stopPropagation(); S.delCo = null; render(); });
+
+  onall('[data-tab]', function(e) { S.tab = e.currentTarget.dataset.tab; S.search = ''; render(); });
+
+  var di = document.getElementById('date-inp');
+  if (di) di.addEventListener('change', function(e) { S.selDate = e.target.value; render(); });
+  var si = document.getElementById('srch');
+  if (si) si.addEventListener('input', function(e) { S.search = e.target.value; render(); });
+  on('btn-clrsrch', function() { S.search = ''; render(); });
+
+  onall('[data-qh]', function(e) { markAll(e.currentTarget.dataset.qh, e.currentTarget.dataset.qv); });
+  onall('[data-sid]', function(e) {
+    var sid = parseInt(e.currentTarget.dataset.sid, 10);
+    var h = e.currentTarget.dataset.h;
+    toggleAtt(sid, h);
+  });
+  onall('[data-exp]', function(e) {
+    var id = parseInt(e.currentTarget.dataset.exp, 10);
+    S.expSt = (S.expSt === id) ? null : id; render();
+  });
+
+  on('btn-as', function() { S.showSF = true; S.editSI = null; S.sfMode = 'fields'; S.sf = { ap:'', nm:'', dni:'', fmt:'ap_nm', full:'' }; render(); });
+  onall('[data-del]', function(e) { S.delSt = parseInt(e.currentTarget.dataset.del, 10); render(); });
+  onall('[data-dno]', function() { S.delSt = null; render(); });
+  onall('[data-dyes]', function(e) { deleteStudent(parseInt(e.currentTarget.dataset.dyes, 10)); });
+  onall('[data-eds]', function(e) {
+    var id = parseInt(e.currentTarget.dataset.eds, 10);
+    var c = getCourse();
+    var s = (c ? c.students || [] : []).find(function(x) { return x.id === id; });
+    if (!s) return;
+    S.editSI = id; S.showSF = true; S.sfMode = 'fields';
+    S.sf = { ap: s.apellido, nm: s.nombre, dni: s.dni||'', fmt:'ap_nm', full:'' };
+    render();
+  });
+  on('btn-imp', function() { S.showImp = true; S.imp = { txt:'', fmt:'ap_nm' }; render(); });
+
+  // Course form
+  on('btn-ccnl', function() { S.showCF = false; S.editCI = null; render(); });
+  on('btn-csav', function() {
+    S.cf.name = val('cf-n'); S.cf.inst = val('cf-i'); S.cf.teacher = val('cf-t'); S.cf.year = val('cf-y');
+    saveCourse();
+  });
+  ['cf-n','cf-i','cf-t','cf-y'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', function(e) { if (e.key === 'Enter') { var b = document.getElementById('btn-csav'); if (b) b.click(); } });
+  });
+
+  // Student form
+  on('sf-mode-f', function() { S.sfMode = 'fields'; render(); });
+  on('sf-mode-s', function() { S.sfMode = 'single'; render(); });
+  on('btn-swap', function() {
+    var parsed = parseName(S.sf.full, S.sf.fmt);
+    if (!parsed) return;
+    S.sf.full = parsed.nm + ', ' + parsed.ap;
+    S.sf.fmt = S.sf.fmt === 'ap_nm' ? 'nm_ap' : 'ap_nm';
+    render();
+  });
+  var sfFullEl = document.getElementById('sf-full');
+  if (sfFullEl) sfFullEl.addEventListener('input', function(e) { S.sf.full = e.target.value; render(); });
+  var sfFmtEl = document.getElementById('sf-fmt');
+  if (sfFmtEl) sfFmtEl.addEventListener('change', function(e) { S.sf.fmt = e.target.value; render(); });
+  ['sf-a','sf-n','sf-d'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function(e) {
+      if (id==='sf-a') S.sf.ap = e.target.value;
+      else if (id==='sf-n') S.sf.nm = e.target.value;
+      else if (id==='sf-d') S.sf.dni = e.target.value;
+    });
+    el.addEventListener('keydown', function(e) { if (e.key==='Enter') { var b=document.getElementById('btn-ssav'); if(b)b.click(); } });
+  });
+  on('btn-scnl', function() { S.showSF = false; S.editSI = null; render(); });
+  on('btn-ssav', function() {
+    if (S.sfMode === 'fields') {
+      S.sf.ap = val('sf-a'); S.sf.nm = val('sf-n');
+    } else {
+      S.sf.full = val('sf-full'); S.sf.fmt = val('sf-fmt') || 'ap_nm';
+    }
+    S.sf.dni = val('sf-d');
+    saveStudent();
+  });
+
+  // Import
+  on('btn-icnl', function() { S.showImp = false; render(); });
+  on('btn-isav', function() {
+    S.imp.txt = val('imp-txt'); S.imp.fmt = val('imp-fmt') || 'ap_nm';
+    doImport();
+  });
+  var imptxt = document.getElementById('imp-txt');
+  if (imptxt) imptxt.addEventListener('input', function(e) { S.imp.txt = e.target.value; });
+  var impfmt = document.getElementById('imp-fmt');
+  if (impfmt) impfmt.addEventListener('change', function(e) { S.imp.fmt = e.target.value; });
+
+  // Cloud modal
+  on('btn-clcnl', function() { S.showCloud = false; render(); });
+  on('btn-cl-dis', function() {
+    if (!confirm('¿Desactivar la sincronización en la nube?')) return;
+    DB.del('cloud'); CL.key = null; CL.binId = null; CL.status = 'off';
+    S.showCloud = false; toast('Nube desconectada.', 'info'); render();
+  });
+  on('btn-clsav', function() {
+    var key = val('cl-key').trim(), bid = val('cl-bid').trim();
+    if (!key) { toast('Ingresá tu Master Key de JSONBin.io.', 'err'); return; }
+    var btnEl = document.getElementById('btn-clsav');
+    if (btnEl) btnEl.textContent = '⏳ Conectando...';
+    CL.key = key;
+    if (bid) {
+      CL.binId = bid; CL.status = 'ing';
+      var data = CL.collect();
+      fetch(JBIN + '/b/' + bid, {
+        method: 'PUT',
+        headers: { 'X-Master-Key': key, 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      }).then(function(r) {
+        if (r.ok) {
+          DB.set('cloud', { key: key, binId: bid });
+          CL.binId = bid; CL.status = 'ok';
+          S.showCloud = false; toast('¡Nube conectada! Bin: ' + bid.slice(0,8) + '...', 'ok'); render();
+        } else {
+          CL.status = 'err'; toast('No se pudo conectar. Verificá la clave y el ID del bin.', 'err'); render();
+        }
+      }).catch(function(e) { CL.status = 'err'; toast('Error: ' + e.message, 'err'); render(); });
+    } else {
+      CL.doCreate(key, function(newBid, errMsg) {
+        if (errMsg || !newBid) { CL.status = 'err'; toast(errMsg || 'No se pudo crear el bin.', 'err'); render(); return; }
+        DB.set('cloud', { key: key, binId: newBid });
+        CL.key = key; CL.binId = newBid; CL.status = 'ok';
+        S.showCloud = false; toast('¡Nube creada! Bin ID: ' + newBid, 'ok'); render();
+      });
+    }
+  });
+
+  // Data modal
+  on('btn-data-cnl', function() { S.showData = false; render(); });
+  on('btn-exp-do', function() { exportData(); S.showData = false; render(); });
+  on('btn-imp-do', function() { importData(); S.showData = false; render(); });
+
+  // PDF
+  on('btn-pdf-cls', function() { var c = getCourse(); if (c) generateClassPDF(c); });
+  on('btn-pdf-stu', function() {
+    var c = getCourse(), sel = val('rep-stu');
+    if (!sel) { toast('Seleccioná un alumno/a primero.', 'err'); return; }
+    if (c) generateStudentPDF(c, parseInt(sel, 10));
+  });
+  on('btn-pdf-dni', function() { var c = getCourse(); if (c) generateRosterPDF(c); });
+
+  // Sort toggle
+  onall('[data-sortby]', function(e) { S.sortBy = e.currentTarget.dataset.sortby; render(); });
+  // Overlay close
+  var ovl = document.getElementById('ovl');
+  if (ovl) ovl.addEventListener('click', function(e) {
+    if (e.target === ovl) {
+      S.showCF = S.showSF = S.showImp = S.showCloud = S.showData = false;
+      S.editCI = S.editSI = null;
+      render();
+    }
+  });
+}
+
+// ===== INIT =====
+function loadPDF() {
+  if (getPDF()) return;
+  var s1 = document.createElement('script');
+  s1.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+  s1.onload = function() {
+    var s2 = document.createElement('script');
+    s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s1);
+}
+
+function initApp() {
+  CL.init();
+  S.scr = 'app';
+  S.courses = getCourses();
+  loadPDF();
+  render();
+}
+
+// Start
+(function() {
+  var u = getCurrentUser();
+  if (u) { initApp(); }
+  else { S.scr = 'auth'; render(); }
+})();
+</script>
+</body>
+</html>
