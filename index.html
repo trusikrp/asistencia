@@ -5,19 +5,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <title>Gestor de Asistencia Docente</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px}
+html,body{height:100%;font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px}
 :root{
-  --navy:#17375e;--nav2:#1e4d82;--nav3:#2878c4;--sky:#deedf9;--sky2:#b8d5ef;
-  --ok:#1e7a47;--okb:#e9f7ef;--ok2:#27ae60;
-  --warn:#c67c10;--wb:#fef5e4;
-  --red:#b92d20;--rb:#fdecea;
-  --bg:#f0f4f8;--bg2:#e8eef5;--sfc:#ffffff;--sfc2:#f6f8fa;
-  --tx:#1a2733;--t2:#4a6070;--t3:#8fa5b2;
-  --bdr:#dde5ec;--bdr2:#c0d0da;
-  --r6:6px;--r8:8px;--r10:10px;--r14:14px;--r18:18px;
-  --sh1:0 1px 3px rgba(0,0,0,.08);--sh2:0 2px 8px rgba(0,0,0,.10);--sh3:0 4px 16px rgba(0,0,0,.13);
-  --sw:290px
+  --navy:#0f172a;--nav2:#1d4ed8;--nav3:#3b82f6;--sky:#eff6ff;--sky2:#dbeafe;
+  --ok:#059669;--okb:#ecfdf5;--ok2:#10b981;
+  --warn:#d97706;--wb:#fffbeb;
+  --red:#dc2626;--rb:#fef2f2;
+  --bg:#f8fafc;--bg2:#f1f5f9;--sfc:#ffffff;--sfc2:#f8fafc;
+  --tx:#0f172a;--t2:#475569;--t3:#94a3b8;
+  --bdr:#e2e8f0;--bdr2:#cbd5e1;
+  --r6:8px;--r8:10px;--r10:12px;--r14:16px;--r18:20px;
+  --sh1:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);--sh2:0 4px 12px rgba(0,0,0,.08);--sh3:0 10px 24px rgba(0,0,0,.12);
+  --sw:300px
 }
 body{background:var(--bg);display:flex;flex-direction:column;height:100dvh;overflow:hidden}
 #app{display:flex;flex-direction:column;height:100%;overflow:hidden}
@@ -122,7 +123,7 @@ select.inp{cursor:pointer}
 .sort-btn:hover{border-color:var(--bdr2);background:var(--bg2)}
 /* LAYOUT */
 .layout{display:flex;flex:1;overflow:hidden}
-.sdb{width:100%;flex-shrink:0;background:var(--navy);display:flex;flex-direction:column;overflow:hidden}
+.sdb{width:100%;flex-shrink:0;background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%);display:flex;flex-direction:column;overflow:hidden}
 .main{display:none;flex:1;flex-direction:column;overflow:hidden;background:var(--bg)}
 .layout.home .sdb{display:flex}.layout.home .main{display:none}
 .layout.crs .sdb{display:none}.layout.crs .main{display:flex}
@@ -205,12 +206,12 @@ select.inp{cursor:pointer}
 .chnm{flex:1;font-size:10px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.5px}
 .chh{width:44px;text-align:center;font-size:10px;font-weight:700;color:var(--t2)}
 .slist{padding:5px 8px 14px}
-.srow{background:var(--sfc);border-radius:var(--r8);padding:8px 9px;margin-bottom:4px;display:flex;align-items:center;gap:6px;border-left:3px solid var(--bdr);border-right:1px solid var(--bdr);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)}
+.srow{background:var(--sfc);border-radius:var(--r10);padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px;border-left:3px solid var(--bdr);border-right:1px solid var(--bdr);border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr);box-shadow:var(--sh1);transition:box-shadow .15s}
 .snum{width:20px;font-size:10px;color:var(--t3);font-weight:700;text-align:center;flex-shrink:0}
 .sinf{flex:1;min-width:0}
 .sap{font-weight:700;font-size:13.5px;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .snm{font-size:11px;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.abtn{width:44px;height:44px;border-radius:var(--r8);border:1.5px solid var(--bdr);background:var(--sfc2);color:var(--t3);font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .12s;font-family:inherit}
+.abtn{width:46px;height:46px;border-radius:var(--r8);border:2px solid var(--bdr);background:var(--sfc);color:var(--t3);font-weight:900;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s cubic-bezier(.4,0,.2,1);font-family:inherit;box-shadow:var(--sh1)}
 .abtn-P{background:var(--ok2);color:#fff;border-color:var(--ok2)}
 .abtn-A{background:var(--red);color:#fff;border-color:var(--red)}
 .lgnd{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;padding:10px 12px;background:var(--sfc);margin:0 8px 10px;border-radius:var(--r10);border:1px solid var(--bdr);font-size:11px;color:var(--t2)}
@@ -680,7 +681,9 @@ function render() {
   if (S.showImp) html += buildImpModal();
   if (S.showCloud) html += buildCloudModal();
   if (S.showData) html += buildDataModal();
+  var _tcEl=document.querySelector('.tc'),_tcST=_tcEl?_tcEl.scrollTop:0;
   root.innerHTML = html;
+  var _tcN=document.querySelector('.tc');if(_tcN&&_tcST)_tcN.scrollTop=_tcST;
   bindApp();
   setTimeout(function() { restoreFocus(); CL.updateBadge(); }, 0);
 }
