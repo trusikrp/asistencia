@@ -982,6 +982,7 @@ function buildAttTab(c, sessions) {
       '<span style="font-size:15px">✏️</span>' +
       '<span style="font-size:13px;font-weight:600;color:#ffa500;flex:1">Editando asistencia del ' + fmtDateS(selDate) + ' (' + dayName(selDate) + ')</span>' +
       '<button id="btn-del-day" style="font-size:11px;padding:4px 10px;border-radius:7px;border:1px solid rgba(220,53,69,.5);background:rgba(220,53,69,.12);color:#ff6b7a;cursor:pointer">🗑 Borrar día</button>' +
+        '<button id="btn-save-day" style="font-size:11px;padding:4px 10px;border-radius:7px;border:1px solid rgba(40,167,69,.5);background:rgba(40,167,69,.12);color:#28a745;cursor:pointer" onclick="saveSessions();toast(\'✅ Cambios guardados\',\'ok\')">💾 Guardar cambios</button>' +
       '</div>';
   } else if (isPastDay && !isRegisteredDay) {
     editingNotice = '<div style="margin:8px 0;padding:8px 14px;background:rgba(100,149,237,.09);border:1px solid rgba(100,149,237,.3);border-radius:10px;font-size:12px;color:var(--t2)">📅 Registrando asistencia para una fecha pasada.</div>';
