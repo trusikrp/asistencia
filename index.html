@@ -1041,7 +1041,23 @@ function buildAttTab(c, sessions) {
   return h;
 }
 
-var col = pctColor(s.pct);
+// ===== STATS TAB =====
+function buildStatsTab(c, sessions, sortedDates) {
+  var tn = Object.keys(sessions).length, tc2 = tn * 2;
+  var stats = calcStats(sortStudents(c.students || []), sessions);
+  var h = '<div class="hero">' +
+    '<div class="hero-lbl">' + esc(c.name) + '</div>' +
+    '<div class="hero-grid">' +
+    '<div class="hero-it"><div class="hero-num">' + tc2 + '</div><div class="hero-sub">Clases dictadas</div></div>' +
+    '<div class="hero-it"><div class="hero-num">' + tn + '</div><div class="hero-sub">Días</div></div>' +
+    '<div class="hero-it"><div class="hero-num">' + (c.students || []).length + '</div><div class="hero-sub">Alumnos/as</div></div>' +
+    '</div></div>' +
+    '<div class="ri"><span>ℹ️</span><span><b style="color:var(--tx)">Regularidad:</b> <span style="color:var(--ok2)">● ≥75%</span> Regular · <span style="color:var(--warn)">● 50–74%</span> En riesgo · <span style="color:var(--red)">● &lt;50%</span> Irregular</span></div>';
+  if (!stats.length) {
+    h += '<div class="mempty">Sin alumnos registrados.</div>';
+  } else {
+    stats.forEach(function(s) {
+      var col = pctColor(s.pct);
       var isExp = S.expSt === s.id;
       var pctTxt = s.pct !== null ? s.pct + '%' : '—';
       h += '<div class="stc">' +
@@ -1134,7 +1150,23 @@ function buildTablero(c, sessions, sortedDates) {
   return h;
 }
 
-s.id;
+// ===== STUDENTS TAB =====
+function buildStudentsTab(c) {
+  var delSt = S.delSt;
+  var students = sortStudents(c.students || []);
+  var can = students.length < 100;
+  var h = '<div class="al-top">' +
+    '<button class="btn btn-sec btn-sm' + (can ? '' : ' btn-dis') + '" id="btn-as">＋ Agregar alumno/a</button>' +
+    '<button class="btn btn-ok btn-sm" id="btn-imp">📋 Importar lista</button>' +
+    '<span style="font-size:11px;color:var(--t2)">' + students.length + '/100</span>' +
+    '</div>';
+  h += buildSortBar();
+  if (!students.length) {
+    h += '<div class="empt"><div class="empt-ico">👥</div><div class="empt-ttl">Sin alumnos/as</div><div class="empt-sub">Agregá alumnos uno por uno o importá una lista. Se ordenan automáticamente por apellido.</div></div>';
+  } else {
+    h += '<div class="al-list">';
+    students.forEach(function(s, i) {
+      var isConf = delSt === s.id;
       h += '<div class="ar">' +
         '<div class="anum">' + (i + 1) + '</div>' +
         '<div class="ainf">' +
