@@ -1590,11 +1590,7 @@ function generateClassPDF(c) {
   allDates.forEach(function(d) {
     var meta = (sessions[d] && sessions[d]._meta) || {};
     var mod = meta.modalidad === 'virtual' ? ' V' : ' P';
-    head[0].push(dayName(d)+'
-'+fmtDateS(d)+mod+'
-H1','
-
-H2');
+    head[0].push(dayName(d)+String.fromCharCode(10)+fmtDateS(d)+' '+mod+String.fromCharCode(10)+'H1',String.fromCharCode(10)+'H2');
   });
   head[0].push('P','A','%');
   var body = stats.map(function(s, i) {
