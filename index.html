@@ -1578,59 +1578,82 @@ function generateClassPDF(c) {
   var students = sortStudents(c.students || []);
   var allDates = Object.keys(sessions).filter(function(k){ return k !== '_meta'; }).sort();
   var stats = calcStats(students, sessions);
-  doc.setFontSize(15); doc.setTextColor(23, 55, 94);
-  doc.text('PLANILLA DE ASISTENCIA', 15, 16);
-  doc.setFontSize(9); doc.setTextColor(80, 80, 80);
-  doc.text(c.name, 15, 22);
-  var m = [c.inst, c.teacher, c.year].filter(Boolean).join(' · ');
-  if (m) doc.text(m, 15, 27);
-  doc.text('Clases: ' + allDates.length*2 + ' | Días: ' + allDates.length + ' | Alumnos: ' + students.length + ' | Generado: ' + fmtDate(TODAY), 15, 32);
-  doc.setDrawColor(23, 55, 94); doc.setLineWidth(0.4); doc.line(15, 35, 280, 35);
-  var head = [['#','Apellido y Nombre','DNI']];
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(14);
+  doc.setTextColor(23,55,94);
+  doc.text('PLANILLA DE ASISTENCIA', 15, 14);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(40,40,40);
+  doc.text(c.name || '', 15, 21);
+  doc.setFontSize(7.5);
+  doc.text((c.inst||'') + ' · ' + (c.teacher||'') + ' · ' + (c.year||''), 15, 27);
+  doc.setFontSize(7);
+  doc.text('Clases: ' + (allDates.length*2) + '  |  Días: ' + allDates.length + '  |  Alumnos: ' + students.length + '  |  ' + fmtDate(new Date().toISOString().slice(0,10)), 15, 33);
+  doc.setDrawColor(23,55,94);
+  doc.setLineWidth(0.4);
+  doc.line(15, 35, 280, 35);
+  var head = [['#', 'Apellido y Nombre', 'DNI']];
   allDates.forEach(function(d) {
     var meta = (sessions[d] && sessions[d]._meta) || {};
-    var mod = meta.modalidad === 'virtual' ? ' V' : ' P';
-    head[0].push(dayName(d)+String.fromCharCode(10)+fmtDateS(d)+' '+mod+String.fromCharCode(10)+'H1',String.fromCharCode(10)+'H2');
+    var mod = meta.modalidad === 'virtual' ? 'V' : 'P';
+    head[0].push(fmtDateS(d) + '\n' + dayName(d).substring(0,2) + ' ' + mod + '\nH1', 'H2');
   });
-  head[0].push('P','A','%');
+  head[0].push('P', 'A', '%');
   var body = stats.map(function(s, i) {
-    var row = [i+1, s.apellido+', '+s.nombre, s.dni||'—'];
+    var row = [i+1, s.apellido + ', ' + s.nombre, s.dni || '\u2014'];
     allDates.forEach(function(d) {
-      var at = (sessions[d]||{})[s.id] || {};
-      row.push(at.h1||'·', at.h2||'·');
+      var at = (sessions[d] || {})[s.id] || {};
+      row.push(at.h1 || '\u00B7', at.h2 || '\u00B7');
     });
-    row.push(s.p, s.a, s.pct !== null ? s.pct+'%' : '—');
+    row.push(s.p, s.a, s.pct !== null ? s.pct + '%' : '\u2014');
     return row;
   });
+  var dateCols = allDates.length * 2;
+  var dateW = Math.max(5.5, Math.floor((267 - 61 - 17) * 10 / dateCols) / 10);
+  var colStyles = { 0: { halign:'center', cellWidth: 7 }, 1: { cellWidth: 40, halign:'left' }, 2: { cellWidth: 14, halign:'center' } };
+  for (var ci = 0; ci < dateCols; ci++) { colStyles[3 + ci] = { cellWidth: dateW, halign:'center' }; }
+  colStyles[3+dateCols] = { cellWidth: 5, halign:'center' };
+  colStyles[3+dateCols+1] = { cellWidth: 5, halign:'center' };
+  colStyles[3+dateCols+2] = { cellWidth: 7, halign:'center' };
   doc.autoTable({
-    startY: 38, head: head, body: body, theme: 'striped',
-    headStyles: { fillColor: [23,55,94], fontSize: 6.5, halign: 'center', cellPadding: 2 },
-    bodyStyles: { fontSize: 7.5, cellPadding: 2 },
-    columnStyles: { 0: { halign:'center', cellWidth:7 }, 1: { cellWidth:42 }, 2: { cellWidth:20, halign:'center' } },
+    startY: 37, head: head, body: body, theme: 'striped',
+    headStyles: { fillColor: [23,55,94], fontSize: 5, fontStyle:'bold', halign:'center', valign:'middle', cellPadding:{top:0.8,right:0.3,bottom:0.8,left:0.3}, overflow:'linebreak' },
+    bodyStyles: { fontSize: 6.5, cellPadding:{top:1,right:0.5,bottom:1,left:0.5}, halign:'center' },
+    alternateRowStyles: { fillColor: [245,247,250] },
+    columnStyles: colStyles,
     didParseCell: function(d) {
       if (d.section === 'body') {
         if (d.cell.raw === 'P') d.cell.styles.fillColor = [213,245,227];
-        else if (d.cell.raw === 'A') d.cell.styles.fillColor = [253,232,232];
+        else if (d.cell.raw === 'A') d.cell.styles.fillColor = [253,225,225];
+        if (d.column.index === 1) d.cell.styles.halign = 'left';
       }
-    }
+    },
+    margin: { top:15, left:15, right:15, bottom:10 }
   });
   var temasInfo = allDates.map(function(d) {
     var meta = (sessions[d] && sessions[d]._meta) || {};
     return meta.tema ? (fmtDateS(d) + ': ' + meta.tema) : null;
   }).filter(Boolean);
   if (temasInfo.length > 0) {
-    var finalY = doc.lastAutoTable.finalY + 5;
+    var finalY = doc.lastAutoTable.finalY + 6;
     if (finalY > 185) { doc.addPage(); finalY = 15; }
-    doc.setFontSize(9); doc.setTextColor(23, 55, 94);
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(23,55,94);
     doc.text('Temas dictados:', 15, finalY);
-    finalY += 5;
-    doc.setFontSize(8); doc.setTextColor(60, 60, 60);
-    temasInfo.forEach(function(t) {
-      if (finalY > 195) { doc.addPage(); finalY = 15; }
-      doc.text('• ' + t, 17, finalY);
-      finalY += 5;
+    doc.setFont('helvetica','normal'); doc.setTextColor(50,50,50);
+    var ty = finalY + 5;
+    temasInfo.forEach(function(tema) {
+      if (ty > 195) { doc.addPage(); ty = 15; }
+      doc.setFontSize(7.5); doc.text('\u2022 ' + tema, 17, ty); ty += 4.5;
     });
   }
+  var pageCount = doc.internal.getNumberOfPages();
+  for (var pg = 1; pg <= pageCount; pg++) {
+    doc.setPage(pg); doc.setFontSize(6.5); doc.setTextColor(140,140,140);
+    doc.text('P\u00E1gina ' + pg + ' de ' + pageCount, 280, 202, {align:'right'});
+    doc.text('Gestor de Asistencia Docente \u2013 v3.0', 15, 202);
+  }
+  var TODAY = new Date().toISOString().slice(0,10);
   var filename = 'asistencia_' + c.name.replace(/[^a-zA-Z0-9]/g,'_') + '_' + TODAY + '.pdf';
   var dataUri = doc.output('datauristring');
   showPDFPreview(dataUri, filename);
