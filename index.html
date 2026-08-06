@@ -944,7 +944,7 @@ function buildSidebar() {
         '<div class="cc-btns">' +
         (isConf
           ? '<button class="ccbtn del" data-dcyes="' + c.id + '">Confirmar</button><button class="ccbtn" data-dcno>No</button>'
-          : '<button class="ccbtn" data-edc="' + c.id + '">✏️</button><button class="ccbtn del" data-dc="' + c.id + '">🗑️</button>') +
+          : '<button class="ccbtn" data-edc="' + c.id + '">✏️</button><button class="ccbtn" data-dup="' + c.id + '" title="Duplicar para 2do cuatrimestre">📑</button><button class="ccbtn del" data-dc="' + c.id + '">🗑️</button>') +
         '</div></div>';
     });
   }
@@ -1482,7 +1482,7 @@ function deleteCourse(id) {
   toast('Espacio "' + (c ? c.name : '') + '" eliminado.', 'info');
   render();
 }
-function exportData() {
+function duplicateCourse(id) { var courses = getCourses(); var c = courses.find(function(x) { return x.id === id; }); if (!c) return; if (courses.length >= MAX_COURSES) { toast('Límite de ' + MAX_COURSES + ' espacios alcanzado.', 'err'); return; } var copiedStudents = (c.students || []).map(function(s) { return Object.assign({}, s); }); var nc = { id: genId(), uid: uid(), name: c.name + ' (2do cuatrimestre)', inst: c.inst || '', teacher: c.teacher || '', year: c.year || '', students: copiedStudents }; courses.push(nc); saveCourses(courses); S.courses = getCourses(); toast('Espacio duplicado como "' + nc.name + '". Podés renombrarlo y editar sus alumnos.', 'ok'); render(); } function exportData() {
   var u = getCurrentUser(), courses = getCourses(), sessions = {};
   courses.forEach(function(c) { sessions[c.id] = DB.get('sess_' + c.id) || {}; });
   var data = { v: 3, exportDate: TODAY, uid: u ? u.id : null, uname: u ? u.uname : null, courses: courses, sessions: sessions };
@@ -1806,7 +1806,7 @@ function bindApp() {
   });
   onall('[data-dc]', function(e) { e.stopPropagation(); S.delCo = e.currentTarget.dataset.dc; render(); });
   onall('[data-dcyes]', function(e) { e.stopPropagation(); deleteCourse(e.currentTarget.dataset.dcyes); });
-  onall('[data-dcno]', function(e) { e.stopPropagation(); S.delCo = null; render(); });
+  onall('[data-dcno]', function(e) { e.stopPropagation(); S.delCo = null; render(); }); onall('[data-dup]', function(e) { e.stopPropagation(); duplicateCourse(e.currentTarget.dataset.dup); });
 
   onall('[data-tab]', function(e) { S.tab = e.currentTarget.dataset.tab; S.search = ''; render(); });
 
